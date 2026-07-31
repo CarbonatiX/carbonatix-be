@@ -63,7 +63,7 @@ def register(db, username: str, name: str, password: str, email: str = "", facil
         "name": name,
         "email": email,
         "password": hash_password(password),
-        "role": "operator",
+        "role": "viewer",
         "facility_id": facility_id,
         "is_active": True,
         "status": "pending",
