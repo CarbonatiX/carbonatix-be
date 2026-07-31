@@ -1,11 +1,7 @@
 import bcrypt
 import jwt
 import datetime
-import streamlit as st
-
-
-def get_secret_key() -> str:
-    return st.secrets["jwt"]["secret_key"]
+from .config import settings
 
 
 def hash_password(password: str) -> str:
@@ -22,12 +18,12 @@ def create_token(username: str, role: str) -> str:
         "role": role,
         "exp": datetime.datetime.now(datetime.timezone.utc) + datetime.timedelta(hours=24),
     }
-    return jwt.encode(payload, get_secret_key(), algorithm="HS256")
+    return jwt.encode(payload, settings.JWT_SECRET_KEY, algorithm="HS256")
 
 
 def verify_token(token: str) -> dict | None:
     try:
-        return jwt.decode(token, get_secret_key(), algorithms=["HS256"])
+        return jwt.decode(token, settings.JWT_SECRET_KEY, algorithms=["HS256"])
     except jwt.ExpiredSignatureError:
         return None
     except jwt.InvalidTokenError:
