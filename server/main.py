@@ -1,6 +1,6 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from .routers import auth, items, admin, users, nodes, documents, scans
+from .routers import auth, items, admin, users, nodes, documents, scans, models
 
 app = FastAPI(
     title="Internal App API",
@@ -23,6 +23,7 @@ app.include_router(users.router)
 app.include_router(nodes.router)
 app.include_router(documents.router)
 app.include_router(scans.router)
+app.include_router(models.router)
 
 
 @app.get("/health")
