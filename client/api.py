@@ -24,11 +24,25 @@ def login(username: str, password: str) -> dict:
         return resp.json()
 
 
-def register(username: str, name: str, password: str) -> dict:
+def register(
+    username: str,
+    name: str,
+    password: str,
+    email: str,
+    facility_id: str,
+    role: str = "operator",
+) -> dict:
     with httpx.Client() as client:
         resp = client.post(
             f"{BASE_URL}/auth/register",
-            json={"username": username, "name": name, "password": password},
+            json={
+                "username": username,
+                "full_name": name,
+                "password": password,
+                "email": email,
+                "facility_id": facility_id,
+                "role": role,
+            },
             timeout=30.0,
         )
         resp.raise_for_status()
@@ -153,6 +167,29 @@ def upload_document(
         return resp.json()
 
 
+def extract_document(document_id: str, extraction_mode: str = "auto") -> dict:
+    with httpx.Client() as client:
+        resp = client.post(
+            f"{BASE_URL}/api/v1/documents/{document_id}/extract",
+            headers=get_headers(),
+            json={"extraction_mode": extraction_mode},
+            timeout=60.0,
+        )
+        resp.raise_for_status()
+        return resp.json()
+
+
+def get_extracted_data(document_id: str) -> dict:
+    with httpx.Client() as client:
+        resp = client.get(
+            f"{BASE_URL}/api/v1/documents/{document_id}/extracted-data",
+            headers=get_headers(),
+            timeout=30.0,
+        )
+        resp.raise_for_status()
+        return resp.json()
+
+
 def get_scans(params: dict[str, Any] | None = None) -> dict:
     with httpx.Client() as client:
         resp = client.get(
@@ -160,6 +197,38 @@ def get_scans(params: dict[str, Any] | None = None) -> dict:
             headers=get_headers(),
             params=params or {},
             timeout=30.0,
+        )
+        resp.raise_for_status()
+        return resp.json()
+
+
+def upload_scan(
+    file: Any,
+    facility_id: str,
+    scan_name: str,
+    node_id: str | None = None,
+    captured_by: str | None = None,
+) -> dict:
+    with httpx.Client() as client:
+        headers = get_headers()
+        headers.pop("Content-Type", None)
+
+        files = {"file": (getattr(file, "name", "file"), file)}
+        params = {
+            "facility_id": facility_id,
+            "scan_name": scan_name,
+        }
+        if node_id:
+            params["node_id"] = node_id
+        if captured_by:
+            params["captured_by"] = captured_by
+
+        resp = client.post(
+            f"{BASE_URL}/api/v1/scans/",
+            headers=headers,
+            files=files,
+            params=params,
+            timeout=60.0,
         )
         resp.raise_for_status()
         return resp.json()
