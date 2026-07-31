@@ -5,19 +5,6 @@ from datetime import datetime
 
 SEED_USERS = [
     {
-        "username": "admin",
-        "name": "Administrator",
-        "email": "admin@carbonatix.com",
-        "password": hash_password("admin123"),
-        "role": "superadmin",
-        "facility_id": "FAC001",
-        "phone_number": "081234567890",
-        "is_active": True,
-        "status": "approved",
-        "created_at": datetime.utcnow(),
-        "updated_at": datetime.utcnow(),
-    },
-    {
         "username": "operator1",
         "name": "Operator Utama",
         "email": "operator1@carbonatix.com",

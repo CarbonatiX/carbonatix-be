@@ -6,8 +6,6 @@ from pydantic import BaseModel, EmailStr
 
 
 class UserRole(str, Enum):
-    admin = "admin"
-    superadmin = "superadmin"
     operator = "operator"
     viewer = "viewer"
 

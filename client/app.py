@@ -86,8 +86,8 @@ else:
     st.title("CarbonatiX ERP")
     st.write("Welcome to the CarbonatiX ERP Dashboard. Use the sidebar to navigate.")
 
-    # Show pending approval count for operators/admins
-    if user.get("role") in ["admin", "superadmin", "operator"]:
+    # Show pending approval count for operators
+    if user.get("role") == "operator":
         try:
             from api import get_pending_users
             result = get_pending_users()

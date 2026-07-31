@@ -18,8 +18,8 @@ if not token:
     st.warning("Silakan login terlebih dahulu")
     st.stop()
 
-if user.get("role") not in ["admin", "superadmin", "operator"]:
-    st.error("Tidak ada akses. Hanya admin/operator yang bisa menyetujui user.")
+if user.get("role") != "operator":
+    st.error("Tidak ada akses. Hanya operator yang bisa menyetujui user.")
     st.stop()
 
 try:

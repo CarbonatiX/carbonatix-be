@@ -69,10 +69,10 @@ def register(req: RegisterRequest, db=Depends(get_db)):
 
 @router.get("/pending")
 def get_pending_users(db=Depends(get_db), current_user=Depends(get_current_user)):
-    if current_user.get("role") not in ["admin", "superadmin", "operator"]:
+    if current_user.get("role") != "operator":
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
-            detail="Tidak ada akses"
+            detail="Hanya operator yang bisa melihat user pending"
         )
     users = auth_get_pending(db)
     return {"items": users, "total": len(users)}
@@ -80,10 +80,10 @@ def get_pending_users(db=Depends(get_db), current_user=Depends(get_current_user)
 
 @router.post("/approve/{user_id}")
 def approve_user(user_id: str, req: ApproveRequest, db=Depends(get_db), current_user=Depends(get_current_user)):
-    if current_user.get("role") not in ["admin", "superadmin", "operator"]:
+    if current_user.get("role") != "operator":
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
-            detail="Hanya admin/operator yang bisa menyetujui user"
+            detail="Hanya operator yang bisa menyetujui user"
         )
     success, message = auth_approve(db, user_id, req.approved)
     if not success:
