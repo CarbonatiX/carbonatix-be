@@ -1,0 +1,52 @@
+# Review package: 0020f38..13bf7b3
+
+## Commits
+13bf7b3 feat: update database connection for FastAPI
+
+## Files changed
+ .gitignore       | 2 ++
+ server/__init__.py | 4 ++--
+ server/database.py | 17 +++++++++++++++++
+ 3 files changed, 20 insertions(+), 3 deletions(-)
+
+## Diff
+diff --git a/.gitignore b/.gitignore
+new file mode 100644
+index 0000000..d50a09f
+--- /dev/null
++++ b/.gitignore
+@@ -0,0 +1,2 @@
++.env
++__pycache__/
+diff --git a/server/__init__.py b/server/__init__.py
+index 85d7116..66c4cf8 100644
+--- a/server/__init__.py
++++ b/server/__init__.py
+@@ -1,2 +1,2 @@
+-from db import init_connection, get_db
+-from auth import login, register, get_all_users, delete_user, verify_token
++from .database import get_database
++from .auth import login, register, get_all_users, delete_user, verify_token
+diff --git a/server/database.py b/server/database.py
+new file mode 100644
+index 0000000..ab0cda7
+--- /dev/null
++++ b/server/database.py
+@@ -0,0 +1,17 @@
++import pymongo
++from pymongo.errors import ConnectionFailure
++from .config import settings
++
++
++_client = None
++
++
++def get_database():
++    global _client
++    if _client is None:
++        try:
++            _client = pymongo.MongoClient(settings.MONGODB_URI)
++            _client.admin.command("ping")
++        except ConnectionFailure:
++            return None
++    return _client[settings.MONGODB_DB_NAME]

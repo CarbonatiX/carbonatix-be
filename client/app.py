@@ -4,7 +4,7 @@ import os
 
 sys.path.insert(0, os.path.dirname(__file__))
 
-from api import login, register
+from api import login, register, get_pending_users, approve_user
 
 st.set_page_config(page_title="CarbonatiX ERP", page_icon=":office:", layout="centered")
 
@@ -41,8 +41,12 @@ if not is_logged_in():
             if submitted:
                 try:
                     result = login(username, password)
-                    st.session_state.token = result["access_token"]
-                    st.session_state.user = result["user"]
+                    st.session_state.token = result["token"]
+                    st.session_state.user = {
+                        "username": result["username"],
+                        "name": result["name"],
+                        "role": result["role"],
+                    }
                     st.rerun()
                 except Exception as e:
                     st.error(f"Login failed: {str(e)}")
@@ -55,7 +59,6 @@ if not is_logged_in():
             new_email = st.text_input("Email", key="reg_email")
             new_password = st.text_input("Password", type="password", key="reg_pass")
             facility_id = st.text_input("Facility ID", key="reg_facility")
-            role = st.selectbox("Role", ["operator", "viewer"], key="reg_role")
             reg_submitted = st.form_submit_button("Register")
 
             if reg_submitted:
@@ -66,7 +69,6 @@ if not is_logged_in():
                         password=new_password,
                         email=new_email,
                         facility_id=facility_id,
-                        role=role,
                     )
                     st.success(result.get("message", "Registration successful!"))
                 except Exception as e:
@@ -83,4 +85,16 @@ else:
 
     st.title("CarbonatiX ERP")
     st.write("Welcome to the CarbonatiX ERP Dashboard. Use the sidebar to navigate.")
-    st.info("Navigate using the pages in the sidebar: Nodes, Documents, Scans, Models.")
+
+    # Show pending approval count for operators/admins
+    if user.get("role") in ["admin", "superadmin", "operator"]:
+        try:
+            from api import get_pending_users
+            result = get_pending_users()
+            pending_count = result.get("total", 0)
+            if pending_count > 0:
+                st.warning(f"Ada {pending_count} user menunggu persetujuan. Buka halaman **Approval** di sidebar.")
+        except:
+            pass
+
+    st.info("Navigate using the pages in the sidebar: Nodes, Documents, Scans, Models, Approval.")

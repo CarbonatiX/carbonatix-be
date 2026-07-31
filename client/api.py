@@ -2,7 +2,7 @@ import httpx
 import streamlit as st
 from typing import Any
 
-BASE_URL = "http://localhost:8000/api/v1"
+BASE_URL = "http://localhost:8000"
 
 
 def get_headers() -> dict[str, str]:
@@ -28,8 +28,8 @@ def register(
     username: str,
     name: str,
     password: str,
-    email: str,
-    facility_id: str,
+    email: str = "",
+    facility_id: str = "",
     role: str = "operator",
 ) -> dict:
     with httpx.Client() as client:
@@ -37,11 +37,8 @@ def register(
             f"{BASE_URL}/auth/register",
             json={
                 "username": username,
-                "full_name": name,
+                "name": name,
                 "password": password,
-                "email": email,
-                "facility_id": facility_id,
-                "role": role,
             },
             timeout=30.0,
         )
@@ -241,6 +238,29 @@ def simulate(data: dict) -> dict:
             headers=get_headers(),
             json=data,
             timeout=60.0,
+        )
+        resp.raise_for_status()
+        return resp.json()
+
+
+def get_pending_users() -> dict:
+    with httpx.Client() as client:
+        resp = client.get(
+            f"{BASE_URL}/auth/pending",
+            headers=get_headers(),
+            timeout=30.0,
+        )
+        resp.raise_for_status()
+        return resp.json()
+
+
+def approve_user(user_id: str, approved: bool) -> dict:
+    with httpx.Client() as client:
+        resp = client.post(
+            f"{BASE_URL}/auth/approve/{user_id}",
+            headers=get_headers(),
+            json={"approved": approved},
+            timeout=30.0,
         )
         resp.raise_for_status()
         return resp.json()
