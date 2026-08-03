@@ -1,6 +1,6 @@
 """Seed data for CarbonatiX ERP"""
 from .auth import hash_password
-from datetime import datetime
+from datetime import datetime, timezone
 
 
 SEED_USERS = [
@@ -14,8 +14,8 @@ SEED_USERS = [
         "phone_number": "081234567891",
         "is_active": True,
         "status": "approved",
-        "created_at": datetime.utcnow(),
-        "updated_at": datetime.utcnow(),
+        "created_at": datetime.now(timezone.utc),
+        "updated_at": datetime.now(timezone.utc),
     },
     {
         "username": "viewer1",
@@ -26,8 +26,20 @@ SEED_USERS = [
         "facility_id": "FAC001",
         "is_active": True,
         "status": "approved",
-        "created_at": datetime.utcnow(),
-        "updated_at": datetime.utcnow(),
+        "created_at": datetime.now(timezone.utc),
+        "updated_at": datetime.now(timezone.utc),
+    },
+]
+
+SEED_FACILITIES = [
+    {
+        "facility_id": "FAC001",
+        "name": "Nickel Processing Plant",
+        "location": "Sulawesi, Indonesia",
+        "current_emissions": 15000,
+        "status": "active",
+        "created_at": datetime.now(timezone.utc),
+        "updated_at": datetime.now(timezone.utc),
     },
 ]
 
@@ -41,8 +53,8 @@ SEED_NODES = [
         "longitude": 115.5,
         "node_type": "furnace",
         "status": "active",
-        "created_at": datetime.utcnow(),
-        "updated_at": datetime.utcnow(),
+        "created_at": datetime.now(timezone.utc),
+        "updated_at": datetime.now(timezone.utc),
     },
     {
         "node_id": "NODE002",
@@ -53,8 +65,8 @@ SEED_NODES = [
         "longitude": 115.501,
         "node_type": "converter",
         "status": "active",
-        "created_at": datetime.utcnow(),
-        "updated_at": datetime.utcnow(),
+        "created_at": datetime.now(timezone.utc),
+        "updated_at": datetime.now(timezone.utc),
     },
 ]
 
@@ -63,6 +75,7 @@ def seed_database(db):
     """Seed the database with initial data if empty"""
     users = db["users"]
     nodes = db["nodes"]
+    facilities = db["facilities"]
 
     # Seed users only if empty
     if users.count_documents({}) == 0:
@@ -78,11 +91,18 @@ def seed_database(db):
     else:
         print("Nodes collection not empty, skipping seed")
 
+    # Seed facilities only if empty
+    if facilities.count_documents({}) == 0:
+        facilities.insert_many(SEED_FACILITIES)
+        print(f"Seeded {len(SEED_FACILITIES)} facilities")
+    else:
+        print("Facilities collection not empty, skipping seed")
+
 
 if __name__ == "__main__":
     from .database import get_database
     db = get_database()
-    if db:
+    if db is not None:
         seed_database(db)
         print("Seed completed!")
     else:

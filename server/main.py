@@ -31,8 +31,18 @@ app.include_router(models.router)
 @app.on_event("startup")
 def startup_event():
     db = get_database()
-    if db:
+    if db is not None:
         seed_database(db)
+
+
+@app.get("/")
+def root():
+    return {
+        "name": "CarbonatiX ERP API",
+        "version": "1.0.0",
+        "docs": "/docs",
+        "health": "/health",
+    }
 
 
 @app.get("/health")
