@@ -34,7 +34,7 @@ Dokumentasi parameter request untuk setiap endpoint, melengkapi mapping Streamli
 |Param|Tipe|Keterangan|
 |-|-|-|
 |`status`|enum|`pending` | `approved` | `rejected`|
-|`approved_by`|string|user_id superadmin|
+|`approved_by`|string|user_id operator|
 |`approved_at`|datetime|timestamp approval|
 
 ### `GET /users` — Query params (list/filter)
