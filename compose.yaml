@@ -1,0 +1,33 @@
+services:
+  server:
+    build: .
+    container_name: carbonatix-api
+    restart: unless-stopped
+    ports:
+      - "8000:8000"
+    env_file:
+      - .env
+    volumes:
+      - uploads:/app/uploads
+    networks:
+      - carbonatix-network
+
+  frontend:
+    build:
+      context: .
+      dockerfile: Dockerfile.streamlit
+    container_name: carbonatix-frontend
+    restart: unless-stopped
+    ports:
+      - "8501:8501"
+    depends_on:
+      - server
+    networks:
+      - carbonatix-network
+
+volumes:
+  uploads:
+
+networks:
+  carbonatix-network:
+    driver: bridge
