@@ -26,11 +26,14 @@ def mock_db():
 
 
 @pytest.fixture
-def client(mock_db):
+def client(mock_db, monkeypatch):
     from server.deps import get_db
-    from server.main import app
+    from server import main as main_module
+
+    app = main_module.app
 
     app.dependency_overrides[get_db] = lambda: mock_db
+    monkeypatch.setattr(main_module, "get_db", lambda: mock_db)
     with TestClient(app, raise_server_exceptions=False) as test_client:
         yield test_client
     app.dependency_overrides.clear()
