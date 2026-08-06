@@ -1,12 +1,26 @@
 services:
+  database:
+    image: mongo:latest
+    container_name: carbonatix-db
+    env_file:
+      - ./server/.env
+    volumes:
+      - mongo_data:/data/db
+    networks:
+      - carbonatix-network
+
   server:
-    build: .
+    build:
+      context: .
+      dockerfile: Dockerfile
     container_name: carbonatix-api
     restart: unless-stopped
     ports:
-      - "8000:8000"
+      - "0.0.0.0:8000:8000"
     env_file:
-      - .env
+      - ./server/.env
+    depends_on:
+      - database
     volumes:
       - uploads:/app/uploads
     networks:
@@ -19,13 +33,16 @@ services:
     container_name: carbonatix-frontend
     restart: unless-stopped
     ports:
-      - "8501:8501"
+      - "0.0.0.0:80:8501"
+    environment:
+      BASE_URL: http://server:8000
     depends_on:
       - server
     networks:
       - carbonatix-network
 
 volumes:
+  mongo_data:
   uploads:
 
 networks:
