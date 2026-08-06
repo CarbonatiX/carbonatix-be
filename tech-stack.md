@@ -52,31 +52,33 @@
 | Module | Prefix | Description |
 |--------|--------|-------------|
 | Auth | `/auth` | Login, Register, Approval |
-| Users | `/api/v1/users` | User management |
-| Nodes | `/api/v1/nodes` | RKEF process monitoring |
-| Documents | `/api/v1/documents` | Document upload & extraction |
-| Scans | `/api/v1/scans` | 3D scan management |
-| Models | `/api/v1/models` | AI simulation |
+| Company | `/company` | Company profile |
+| Twin Model | `/twin` | Node models and 3D simulation |
+| Documents | `/documents` | Document upload & extraction |
+| Emissions | `/emissions` | Emission monitoring |
+| Runs | `/runs` |  |
+| Forecasts | `/forecasts` |  |
+| Recommendations | `/runs/{run_id}/recommendation` | Emission monitoring |
 
 ## Project Structure
 
 ```
 carbonatix-be/
 ├── server/
+│   ├── __init__.py
 │   ├── main.py           # FastAPI app entry
 │   ├── config.py         # Environment settings
 │   ├── database.py       # MongoDB connection
 │   ├── auth.py           # Authentication logic
 │   ├── seed.py           # Seed data
 │   ├── deps.py           # Dependencies
+│   ├── router.py
+│   ├── schemas.py
 │   ├── models/           # Pydantic schemas
-│   └── routers/          # API endpoints
-├── client/
-│   ├── app.py            # Streamlit main
-│   ├── api.py            # HTTP client
-│   └── pages/            # Streamlit pages
+│   └── services/         # Service modules
 ├── requirements.txt      # Python dependencies
 ├── Dockerfile            # Container build
+├── Dockerfile.streamlit  # Frontend container build
 ├── compose.yaml          # Docker Compose
 └── .env                  # Environment variables
 ```
