@@ -2,6 +2,10 @@ import os
 import sys
 from pathlib import Path
 
+import mongomock
+import pytest
+from fastapi.testclient import TestClient
+
 ROOT_DIR = Path(__file__).resolve().parents[1]
 if str(ROOT_DIR) not in sys.path:
     sys.path.insert(0, str(ROOT_DIR))
@@ -9,13 +13,6 @@ if str(ROOT_DIR) not in sys.path:
 os.environ.setdefault("MONGODB_URI", "mongodb://localhost:27017")
 os.environ.setdefault("MONGODB_DB_NAME", "carbonatix_test")
 os.environ.setdefault("JWT_SECRET_KEY", "test-jwt-secret-key-for-ci-only-32b")
-
-import mongomock
-import pytest
-from fastapi.testclient import TestClient
-
-from server.deps import get_db
-from server.main import app
 
 TEST_PASSWORD = "Secure1!"
 
@@ -30,6 +27,9 @@ def mock_db():
 
 @pytest.fixture
 def client(mock_db):
+    from server.deps import get_db
+    from server.main import app
+
     app.dependency_overrides[get_db] = lambda: mock_db
     with TestClient(app, raise_server_exceptions=False) as test_client:
         yield test_client
