@@ -1,7 +1,7 @@
 from pydantic import BaseModel, EmailStr, Field
 
-
 # ── Auth ──────────────────────────────────────────────────────────────
+
 
 class RegisterRequest(BaseModel):
     email: EmailStr
@@ -24,6 +24,7 @@ class AuthResponse(BaseModel):
 
 
 # ── Company ───────────────────────────────────────────────────────────
+
 
 class SiteSpec(BaseModel):
     ef_captive_pltu: float
@@ -53,6 +54,7 @@ class CompanyUpdate(BaseModel):
 
 
 # ── Twin ──────────────────────────────────────────────────────────────
+
 
 class TwinPart(BaseModel):
     mesh_ref: str
@@ -105,6 +107,7 @@ class TwinGapsResponse(BaseModel):
 
 # ── Documents ─────────────────────────────────────────────────────────
 
+
 class DocumentBrief(BaseModel):
     document_id: str
     status: str
@@ -127,6 +130,7 @@ class DocumentsResponse(BaseModel):
 
 
 # ── Emissions ─────────────────────────────────────────────────────────
+
 
 class EmissionRequest(BaseModel):
     wet_ore_input_tons: float
@@ -164,6 +168,7 @@ class EmissionResponse(BaseModel):
 
 # ── Runs ──────────────────────────────────────────────────────────────
 
+
 class RunRequest(BaseModel):
     input_snapshot: EmissionRequest
 
@@ -194,6 +199,7 @@ class RunResponse(BaseModel):
 
 
 # ── Forecasts ─────────────────────────────────────────────────────────
+
 
 class NickelPoint(BaseModel):
     date: str
@@ -228,6 +234,7 @@ class ForecastsResponse(BaseModel):
 
 
 # ── Error ─────────────────────────────────────────────────────────────
+
 
 class ErrorDetail(BaseModel):
     code: str

@@ -1,14 +1,23 @@
 from contextlib import asynccontextmanager
+
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from pydantic import ValidationError
+
 from .database import get_db
 from .router import router
 
 
 class AppError(Exception):
-    def __init__(self, code: str, message: str, status_code: int = 400, field: str = None, details: dict = None):
+    def __init__(
+        self,
+        code: str,
+        message: str,
+        status_code: int = 400,
+        field: str | None = None,
+        details: dict | None = None,
+    ):
         self.code = code
         self.message = message
         self.status_code = status_code
@@ -22,6 +31,7 @@ async def lifespan(app: FastAPI):
     if db is not None:
         _ensure_indexes(db)
         from .seed import seed_database
+
         seed_database(db)
     yield
 

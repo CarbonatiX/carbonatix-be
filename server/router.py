@@ -1,18 +1,33 @@
-from fastapi import APIRouter, Depends, UploadFile, File, Query
+from fastapi import APIRouter, Depends, File, Query, UploadFile
 from fastapi.responses import StreamingResponse
+
+from .deps import get_current_user, get_db
 from .schemas import (
-    RegisterRequest, LoginRequest, AuthResponse,
-    CompanyResponse, CompanyUpdate,
-    TwinModelResponse, TwinNodesResponse, TwinNodesUpdate, TwinGapsResponse,
+    AuthResponse,
+    CompanyResponse,
+    CompanyUpdate,
     DocumentsResponse,
-    EmissionRequest, EmissionResponse,
-    RunRequest, RunResponse,
+    EmissionRequest,
+    EmissionResponse,
     ForecastsResponse,
+    LoginRequest,
+    RegisterRequest,
+    RunRequest,
+    RunResponse,
+    TwinGapsResponse,
+    TwinModelResponse,
+    TwinNodesResponse,
+    TwinNodesUpdate,
 )
-from .deps import get_db, get_current_user
 from .services import (
-    auth_service, company_service, twin_service, document_service,
-    emission_service, run_service, forecast_service, recommendation_service,
+    auth_service,
+    company_service,
+    document_service,
+    emission_service,
+    forecast_service,
+    recommendation_service,
+    run_service,
+    twin_service,
 )
 
 router = APIRouter()
@@ -20,12 +35,14 @@ router = APIRouter()
 
 # ── Health ────────────────────────────────────────────────────────────
 
+
 @router.get("/health")
 def health():
     return {"status": "healthy"}
 
 
 # ── Auth ──────────────────────────────────────────────────────────────
+
 
 @router.post("/auth/register", response_model=AuthResponse, status_code=201)
 def register(req: RegisterRequest, db=Depends(get_db)):
@@ -39,22 +56,30 @@ def login(req: LoginRequest, db=Depends(get_db)):
 
 # ── Company ───────────────────────────────────────────────────────────
 
+
 @router.get("/company", response_model=CompanyResponse)
 def get_company(user=Depends(get_current_user), db=Depends(get_db)):
     return company_service.get_company(db, user["company_id"])
 
 
 @router.put("/company", response_model=CompanyResponse)
-def update_company(req: CompanyUpdate, user=Depends(get_current_user), db=Depends(get_db)):
+def update_company(
+    req: CompanyUpdate, user=Depends(get_current_user), db=Depends(get_db)
+):
     return company_service.update_company_profile(db, user["company_id"], req)
 
 
 # ── Twin ──────────────────────────────────────────────────────────────
 
+
 @router.post("/twin/model", response_model=TwinModelResponse, status_code=201)
-def upload_twin_model(file: UploadFile = File(...), user=Depends(get_current_user), db=Depends(get_db)):
+def upload_twin_model(
+    file: UploadFile = File(...), user=Depends(get_current_user), db=Depends(get_db)
+):
     parts = [{"mesh_ref": "mesh_default", "label": file.filename or "uploaded_model"}]
-    return twin_service.upload_model(db, user["company_id"], file_id=file.filename or "unknown", parts=parts)
+    return twin_service.upload_model(
+        db, user["company_id"], file_id=file.filename or "unknown", parts=parts
+    )
 
 
 @router.get("/twin/nodes", response_model=TwinNodesResponse)
@@ -63,7 +88,9 @@ def get_twin_nodes(user=Depends(get_current_user), db=Depends(get_db)):
 
 
 @router.put("/twin/nodes", response_model=TwinNodesResponse)
-def update_twin_nodes(req: TwinNodesUpdate, user=Depends(get_current_user), db=Depends(get_db)):
+def update_twin_nodes(
+    req: TwinNodesUpdate, user=Depends(get_current_user), db=Depends(get_db)
+):
     return twin_service.update_nodes(db, user["company_id"], req)
 
 
@@ -74,12 +101,18 @@ def get_twin_gaps(user=Depends(get_current_user), db=Depends(get_db)):
 
 # ── Documents ─────────────────────────────────────────────────────────
 
+
 @router.post("/documents", response_model=DocumentsResponse, status_code=201)
-def upload_documents(files: list[UploadFile] = File(...), user=Depends(get_current_user), db=Depends(get_db)):
+def upload_documents(
+    files: list[UploadFile] = File(...),
+    user=Depends(get_current_user),
+    db=Depends(get_db),
+):
     return document_service.upload_documents(db, user["company_id"], files)
 
 
 # ── Emissions ─────────────────────────────────────────────────────────
+
 
 @router.post("/emissions", response_model=EmissionResponse)
 def calculate_emissions(req: EmissionRequest, user=Depends(get_current_user)):
@@ -87,6 +120,7 @@ def calculate_emissions(req: EmissionRequest, user=Depends(get_current_user)):
 
 
 # ── Runs ──────────────────────────────────────────────────────────────
+
 
 @router.post("/runs", response_model=RunResponse, status_code=201)
 def commit_run(req: RunRequest, user=Depends(get_current_user), db=Depends(get_db)):
@@ -100,15 +134,23 @@ def get_run(run_id: str, user=Depends(get_current_user), db=Depends(get_db)):
 
 # ── Forecasts ─────────────────────────────────────────────────────────
 
+
 @router.get("/forecasts", response_model=ForecastsResponse)
-def get_forecasts(horizon_days: int = Query(ge=7, le=30, default=14), user=Depends(get_current_user), db=Depends(get_db)):
+def get_forecasts(
+    horizon_days: int = Query(ge=7, le=30, default=14),
+    user=Depends(get_current_user),
+    db=Depends(get_db),
+):
     return forecast_service.get_forecasts(db, horizon_days)
 
 
 # ── Recommendations (SSE) ────────────────────────────────────────────
 
+
 @router.get("/runs/{run_id}/recommendation")
-async def get_recommendation(run_id: str, user=Depends(get_current_user), db=Depends(get_db)):
+async def get_recommendation(
+    run_id: str, user=Depends(get_current_user), db=Depends(get_db)
+):
     run_resp = run_service.get_run(db, user["company_id"], run_id)
     return StreamingResponse(
         recommendation_service.stream_recommendation(run_resp.run),

@@ -1,5 +1,5 @@
 from .auth import hash_password
-from .models import create_user, create_company
+from .models import create_company, create_user
 
 
 def seed_database(db):
@@ -7,7 +7,9 @@ def seed_database(db):
         return
 
     pw_hash = hash_password("test123!")
-    company = create_company(db, owner_user_id="", name="Demo Smelter", technology="RKEF")
+    company = create_company(
+        db, owner_user_id="", name="Demo Smelter", technology="RKEF"
+    )
     company["period_cap_tco2e"] = 480000.0
     company["site_spec"] = {
         "ef_captive_pltu": 0.98,
@@ -19,6 +21,8 @@ def seed_database(db):
     db.companies.update_one({"_id": company["id"]}, {"$set": company})
 
     user = create_user(db, "demo@carbonatix.com", pw_hash, company["id"])
-    db.companies.update_one({"_id": company["id"]}, {"$set": {"owner_user_id": user["id"]}})
+    db.companies.update_one(
+        {"_id": company["id"]}, {"$set": {"owner_user_id": user["id"]}}
+    )
 
-    print(f"Seeded user: demo@carbonatix.com / test123!")
+    print("Seeded user: demo@carbonatix.com / test123!")

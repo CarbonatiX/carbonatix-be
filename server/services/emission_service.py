@@ -3,7 +3,9 @@ from ..schemas import EmissionRequest, EmissionResponse, EmissionResult
 
 def calculate_emissions(req: EmissionRequest) -> EmissionResponse:
     dry_ore_tons = req.wet_ore_input_tons * (1 - req.moisture_content_pct)
-    alloy_output_tons = dry_ore_tons * req.nickel_grade_pct / 0.12 if req.nickel_grade_pct else 0
+    alloy_output_tons = (
+        dry_ore_tons * req.nickel_grade_pct / 0.12 if req.nickel_grade_pct else 0
+    )
     nickel_output_tons = alloy_output_tons * 0.12
 
     dryer_coal_tons = dry_ore_tons * 0.01
@@ -33,7 +35,9 @@ def calculate_emissions(req: EmissionRequest) -> EmissionResponse:
             scope_1=round(scope_1, 2),
             scope_2=round(scope_2, 2),
             total_emissions=round(total_emissions, 2),
-            intensity_per_tonne_ni=round(intensity, 4) if intensity is not None else None,
+            intensity_per_tonne_ni=round(intensity, 4)
+            if intensity is not None
+            else None,
             dry_ore_tons=round(dry_ore_tons, 2),
             dryer_coal_tons=round(dryer_coal_tons, 2),
             kiln_coal_tons=round(kiln_coal_tons, 2),

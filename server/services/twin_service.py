@@ -1,12 +1,18 @@
-from ..schemas import (
-    TwinModelResponse, TwinModelInner, TwinPart,
-    TwinNodesResponse, TwinNode, TwinNodesUpdate,
-    TwinGapsResponse, OrphanField, AmbiguousField,
-)
 from ..models import create_twin_model, find_twin_by_company, upsert_twin_nodes
+from ..schemas import (
+    TwinGapsResponse,
+    TwinModelInner,
+    TwinModelResponse,
+    TwinNode,
+    TwinNodesResponse,
+    TwinNodesUpdate,
+    TwinPart,
+)
 
 
-def upload_model(db, company_id: str, file_id: str, parts: list[dict]) -> TwinModelResponse:
+def upload_model(
+    db, company_id: str, file_id: str, parts: list[dict]
+) -> TwinModelResponse:
     existing = find_twin_by_company(db, company_id)
     if existing:
         raise ValueError("Twin model already exists for this company")
