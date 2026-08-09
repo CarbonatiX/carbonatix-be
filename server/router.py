@@ -1,7 +1,6 @@
+from deps import get_current_user, get_db
 from fastapi import APIRouter, Depends, File, Query, UploadFile
 from fastapi.responses import StreamingResponse
-
-from deps import get_current_user, get_db
 from schemas import (
     AuthResponse,
     CompanyResponse,

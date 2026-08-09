@@ -1,11 +1,10 @@
 from contextlib import asynccontextmanager
 
+from database import get_db
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from pydantic import ValidationError
-
-from database import get_db
 from router import router
 
 
