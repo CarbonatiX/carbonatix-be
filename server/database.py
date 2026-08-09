@@ -1,6 +1,7 @@
 import pymongo
-from server.config import settings
 from pymongo.errors import ConnectionFailure
+
+from server.config import settings
 
 _client = None
 
