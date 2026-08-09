@@ -2,9 +2,9 @@ name: Backend CI
 
 on:
   push:
-    branches: [main, dev]
+    branches: [main]
   pull_request:
-    branches: [main, dev]
+    branches: [main]
 
 jobs:
   test:
@@ -27,5 +27,7 @@ jobs:
       - name: Run Lint
         run: ruff check .
 
-      - name: Run Tests
+      - name: Run tests
+        env:
+          PYTHONPATH: .
         run: pytest
