@@ -29,5 +29,5 @@ jobs:
 
       - name: Run tests
         env:
-          PYTHONPATH: .
+          PYTHONPATH: .:server
         run: pytest
