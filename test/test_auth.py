@@ -16,6 +16,7 @@ def test_register_success(client):
     body = response.json()
     assert body["user"]["email"] == "new@example.com"
     assert body["user"]["id"].startswith("usr_")
+    assert body["user"]["role"] == "admin"
     assert body["token"]
 
 
@@ -33,6 +34,7 @@ def test_login_success(client):
     assert response.status_code == 200
     body = response.json()
     assert body["user"]["email"] == "login@example.com"
+    assert body["user"]["role"] == "admin"
     assert body["token"]
 
 
