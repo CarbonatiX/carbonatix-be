@@ -8,13 +8,16 @@ def _serialize(doc: dict) -> dict:
     return doc
 
 
-def create_user(db, email: str, password_hash: str, company_id: str) -> dict:
+def create_user(
+    db, email: str, password_hash: str, company_id: str, role: str = "admin"
+) -> dict:
     now = datetime.now(timezone.utc).isoformat()
     doc = {
         "_id": f"usr_{ObjectId()}",
         "email": email,
         "password_hash": password_hash,
         "company_id": company_id,
+        "role": role,
         "created_at": now,
         "updated_at": now,
     }

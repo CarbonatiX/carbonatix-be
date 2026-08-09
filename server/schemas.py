@@ -16,6 +16,7 @@ class LoginRequest(BaseModel):
 class UserBrief(BaseModel):
     id: str
     email: str
+    role: str = "admin"
 
 
 class AuthResponse(BaseModel):

@@ -1,8 +1,8 @@
 from fastapi import Depends, HTTPException, status
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 
-from .auth import verify_token
-from .database import get_db as _get_db
+from auth import verify_token
+from database import get_db as _get_db
 
 bearer_scheme = HTTPBearer()
 
@@ -35,4 +35,9 @@ def get_current_user(
                 "error": {"code": "unauthorized", "message": "Invalid token payload"}
             },
         )
-    return {"user_id": user_id, "company_id": company_id, "email": payload.get("email")}
+    return {
+        "user_id": user_id,
+        "company_id": company_id,
+        "email": payload.get("email"),
+        "role": payload.get("role", "admin"),
+    }

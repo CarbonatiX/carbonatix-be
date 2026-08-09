@@ -1,5 +1,5 @@
-from ..models import find_company_by_id, update_company
-from ..schemas import CompanyDetail, CompanyResponse, CompanyUpdate
+from models import find_company_by_id, update_company
+from schemas import CompanyDetail, CompanyResponse, CompanyUpdate
 
 
 def get_company(db, company_id: str) -> CompanyResponse:

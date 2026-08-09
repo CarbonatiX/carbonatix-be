@@ -1,7 +1,7 @@
 from datetime import datetime, timedelta, timezone
 
-from ..models import get_latest_forecast
-from ..schemas import (
+from models import get_latest_forecast
+from schemas import (
     CarbonForecast,
     CarbonPoint,
     ForecastsResponse,

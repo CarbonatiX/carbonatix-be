@@ -1,5 +1,5 @@
-from ..models import create_twin_model, find_twin_by_company, upsert_twin_nodes
-from ..schemas import (
+from models import create_twin_model, find_twin_by_company, upsert_twin_nodes
+from schemas import (
     TwinGapsResponse,
     TwinModelInner,
     TwinModelResponse,

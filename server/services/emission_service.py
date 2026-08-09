@@ -1,4 +1,4 @@
-from ..schemas import EmissionRequest, EmissionResponse, EmissionResult
+from schemas import EmissionRequest, EmissionResponse, EmissionResult
 
 
 def calculate_emissions(req: EmissionRequest) -> EmissionResponse:

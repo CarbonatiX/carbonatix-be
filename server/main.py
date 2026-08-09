@@ -5,8 +5,8 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from pydantic import ValidationError
 
-from .database import get_db
-from .router import router
+from database import get_db
+from router import router
 
 
 class AppError(Exception):
@@ -30,7 +30,7 @@ async def lifespan(app: FastAPI):
     db = get_db()
     if db is not None:
         _ensure_indexes(db)
-        from .seed import seed_database
+        from seed import seed_database
 
         seed_database(db)
     yield

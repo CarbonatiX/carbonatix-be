@@ -1,7 +1,7 @@
 import asyncio
 import json
 
-from ..schemas import RunDetail
+from schemas import RunDetail
 
 
 async def stream_recommendation(run: RunDetail):

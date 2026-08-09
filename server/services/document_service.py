@@ -1,5 +1,5 @@
-from ..models import create_document
-from ..schemas import DocumentBrief, DocumentsResponse
+from models import create_document
+from schemas import DocumentBrief, DocumentsResponse
 
 
 def upload_documents(db, company_id: str, files: list) -> DocumentsResponse:
