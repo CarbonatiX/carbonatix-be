@@ -35,9 +35,9 @@ def calculate_emissions(req: EmissionRequest) -> EmissionResponse:
             scope_1=round(scope_1, 2),
             scope_2=round(scope_2, 2),
             total_emissions=round(total_emissions, 2),
-            intensity_per_tonne_ni=round(intensity, 4)
-            if intensity is not None
-            else None,
+            intensity_per_tonne_ni=(
+                round(intensity, 4) if intensity is not None else None
+            ),
             dry_ore_tons=round(dry_ore_tons, 2),
             dryer_coal_tons=round(dryer_coal_tons, 2),
             kiln_coal_tons=round(kiln_coal_tons, 2),

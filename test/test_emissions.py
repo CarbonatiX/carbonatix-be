@@ -30,7 +30,9 @@ def test_emissions_endpoint_requires_auth(client, sample_emission_request):
 
 
 def test_emissions_endpoint_with_auth(client, auth_headers, sample_emission_request):
-    response = client.post("/emissions", json=sample_emission_request, headers=auth_headers)
+    response = client.post(
+        "/emissions", json=sample_emission_request, headers=auth_headers
+    )
 
     assert response.status_code == 200
     result = response.json()["emission_result"]

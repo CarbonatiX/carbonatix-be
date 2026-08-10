@@ -72,4 +72,6 @@ def test_login_invalid_credentials_raises(mock_db):
     auth_service.register(mock_db, req)
 
     with pytest.raises(ValueError, match="Invalid credentials"):
-        auth_service.login(mock_db, LoginRequest(email="svc@example.com", password="WrongPass1!"))
+        auth_service.login(
+            mock_db, LoginRequest(email="svc@example.com", password="WrongPass1!")
+        )

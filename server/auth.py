@@ -16,9 +16,7 @@ def check_password(password: str, hashed: str) -> bool:
     return bcrypt.checkpw(password.encode(), hashed.encode())
 
 
-def create_token(
-    user_id: str, company_id: str, email: str, role: str = "admin"
-) -> str:
+def create_token(user_id: str, company_id: str, email: str, role: str = "admin") -> str:
     payload = {
         "sub": user_id,
         "company_id": company_id,

@@ -20,9 +20,7 @@ def seed_database(db):
     }
     db.companies.update_one({"_id": company["id"]}, {"$set": company})
 
-    user = create_user(
-        db, "demo@carbonatix.com", pw_hash, company["id"], role="admin"
-    )
+    user = create_user(db, "demo@carbonatix.com", pw_hash, company["id"], role="admin")
     db.companies.update_one(
         {"_id": company["id"]}, {"$set": {"owner_user_id": user["id"]}}
     )
