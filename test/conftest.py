@@ -28,7 +28,7 @@ def mock_db():
 @pytest.fixture
 def client(mock_db, monkeypatch):
     from server import main as main_module
-    from server.deps import get_db
+    from deps import get_db
 
     app = main_module.app
 
