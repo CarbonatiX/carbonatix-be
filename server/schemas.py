@@ -106,7 +106,7 @@ class TwinGapsResponse(BaseModel):
     ambiguous_fields: list[AmbiguousField]
 
 
-# ── Documents ─────────────────────────────────────────────────────────
+# ── Documents (solo FE extraction shape) ──────────────────────────────
 
 
 class DocumentBrief(BaseModel):
@@ -114,6 +114,25 @@ class DocumentBrief(BaseModel):
     status: str
 
 
+class CandidateResponse(BaseModel):
+    """One OCR/interpret candidate for user review (never auto-accepted)."""
+
+    field: str
+    value: float | None
+    confidence: float
+    node: str
+    sourceHint: str = ""
+    basis: str | None = None
+    evidence: str = ""
+    derivation: str = ""
+
+
+class DocumentExtractionResponse(BaseModel):
+    candidates: list[CandidateResponse]
+    confidenceIsPlaceholder: bool = True
+
+
+# Legacy multi-upload shape kept for older clients (unused by FE slice-2).
 class DocumentCandidate(BaseModel):
     candidate_id: str
     field_name: str
