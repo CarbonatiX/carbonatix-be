@@ -2,12 +2,22 @@ name: Backend CI
 
 on:
   push:
+<<<<<<< Updated upstream
     branches: [main]
   pull_request:
     branches: [main]
 
 jobs:
   test:
+=======
+    branches: ["main"]
+  pull_request:
+    branches: ["main"]
+
+jobs:
+  test:
+    name: Test & Lint
+>>>>>>> Stashed changes
     runs-on: ubuntu-latest
 
     steps:
@@ -24,6 +34,7 @@ jobs:
           python -m pip install --upgrade pip
           pip install -r requirements.txt
 
+<<<<<<< Updated upstream
       - name: Check Black
         run: black --check .
 
@@ -34,3 +45,42 @@ jobs:
         env:
           PYTHONPATH: .:server
         run: pytest
+=======
+      - name: Run Ruff
+        run: ruff check .
+
+      - name: Run Pytest
+        run: pytest
+
+  docker:
+    name: Build & Run Backend
+    needs: test
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout source
+        uses: actions/checkout@v4
+
+      - name: Build backend image
+        run: docker compose build server
+
+      - name: Start database and backend
+        run: docker compose up -d database server
+
+      - name: Check containers
+        run: docker compose ps
+
+      - name: Wait for backend
+        run: sleep 10
+
+      - name: Check backend API
+        run: curl --fail http://localhost:8000/docs
+
+      - name: Show logs if failed
+        if: failure()
+        run: docker compose logs database server
+
+      - name: Stop containers
+        if: always()
+        run: docker compose down -v
+>>>>>>> Stashed changes
