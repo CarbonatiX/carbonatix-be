@@ -35,3 +35,21 @@ def upsert_twin_nodes(db, company_id: str, nodes: list[dict]) -> dict | None:
         upsert=True,
     )
     return find_twin_by_company(db, company_id)
+
+
+def add_twin_node(db, company_id: str, node: dict) -> dict | None:
+    now = datetime.now(timezone.utc).isoformat()
+    db.twin_models.update_one(
+        {"company_id": company_id},
+        {"$push": {"nodes": node}, "$set": {"updated_at": now}},
+    )
+    return find_twin_by_company(db, company_id)
+
+
+def remove_twin_node(db, company_id: str, node_id: str) -> dict | None:
+    now = datetime.now(timezone.utc).isoformat()
+    db.twin_models.update_one(
+        {"company_id": company_id},
+        {"$pull": {"nodes": {"node_id": node_id}}, "$set": {"updated_at": now}},
+    )
+    return find_twin_by_company(db, company_id)

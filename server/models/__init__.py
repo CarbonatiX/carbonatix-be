@@ -4,10 +4,11 @@ from .forecast import get_latest_forecast, upsert_forecast
 from .price_history import get_price_history, upsert_price_history
 from .recommendation import create_recommendation, find_recommendation_by_run
 from .run import create_run, find_run_by_id
-from .twin import create_twin_model, find_twin_by_company, upsert_twin_nodes
+from .twin import add_twin_node, create_twin_model, find_twin_by_company, remove_twin_node, upsert_twin_nodes
 from .user import create_user, find_user_by_email, find_user_by_id
 
 __all__ = [
+    "add_twin_node",
     "create_company",
     "create_document",
     "create_recommendation",
@@ -24,6 +25,7 @@ __all__ = [
     "get_latest_forecast",
     "get_price_history",
     "list_documents_by_company",
+    "remove_twin_node",
     "update_company",
     "upsert_forecast",
     "upsert_price_history",
