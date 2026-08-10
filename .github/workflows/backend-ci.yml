@@ -33,4 +33,5 @@ jobs:
       - name: Run Tests
         env:
           PYTHONPATH: .:server
-        run: pytest
+          MONGO_URI: ${{ secrets.MONGO_URI }}
+        run: pytest -vv
