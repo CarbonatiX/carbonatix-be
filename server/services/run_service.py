@@ -1,3 +1,4 @@
+from fastapi import HTTPException
 from emissions.calculator import calculate_emissions as _calculate_raw
 from emissions.compliance import DEFAULT_CARBON_PRICE_IDR, assess
 from models import create_run, find_company_by_id, find_run_by_id
@@ -11,8 +12,16 @@ from schemas import (
 )
 from services.emission_service import constants_from_site_spec
 from services.forecast_service import get_forecasts
+from services.twin_service import get_gaps
 
 
+def commit_run(db, company_id: str, user_id: str, req: RunRequest) -> RunResponse:
+    gaps = get_gaps(db, company_id)
+    if gaps.unbound_required_process_types or gaps.orphan_fields or gaps.ambiguous_fields:
+        raise HTTPException(status_code=422, detail=gaps.model_dump())
+
+    emission_resp = calculate_emissions(req.input_snapshot)
+    emission_result = emission_resp.emission_result.model_dump()
 def _to_api_emission_result(raw) -> dict:
     intensity = raw.intensity_per_tonne_ni
     return EmissionResult(
