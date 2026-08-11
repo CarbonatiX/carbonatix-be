@@ -1,10 +1,16 @@
+from fastapi import HTTPException
 from models import create_run, find_company_by_id, find_run_by_id
 from schemas import Compliance, ForecastSnapshot, RunDetail, RunRequest, RunResponse
 from services.emission_service import calculate_emissions
 from services.forecast_service import get_forecasts
+from services.twin_service import get_gaps
 
 
 def commit_run(db, company_id: str, user_id: str, req: RunRequest) -> RunResponse:
+    gaps = get_gaps(db, company_id)
+    if gaps.unbound_required_process_types or gaps.orphan_fields or gaps.ambiguous_fields:
+        raise HTTPException(status_code=422, detail=gaps.model_dump())
+
     emission_resp = calculate_emissions(req.input_snapshot)
     emission_result = emission_resp.emission_result.model_dump()
 

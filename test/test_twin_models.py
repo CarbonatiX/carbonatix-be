@@ -1,15 +1,13 @@
 from server.models.twin import (
     add_twin_node,
     create_twin_model,
-    find_twin_by_company,
     remove_twin_node,
-    upsert_twin_nodes,
 )
 
 
 def test_add_twin_node(mock_db):
     company_id = "company_123"
-    create_twin_model(mock_db, company_id, "file_1", [])
+    create_twin_model(mock_db, company_id, "file_1", "gridfs_1", [])
 
     node = {"node_id": "node_1", "type": "smelting", "label": "Smelting Process"}
     result = add_twin_node(mock_db, company_id, node)
@@ -21,7 +19,7 @@ def test_add_twin_node(mock_db):
 
 def test_add_twin_node_multiple(mock_db):
     company_id = "company_123"
-    create_twin_model(mock_db, company_id, "file_1", [])
+    create_twin_model(mock_db, company_id, "file_1", "gridfs_1", [])
 
     node1 = {"node_id": "node_1", "type": "smelting"}
     node2 = {"node_id": "node_2", "type": "refining"}
@@ -35,7 +33,7 @@ def test_add_twin_node_multiple(mock_db):
 
 def test_remove_twin_node(mock_db):
     company_id = "company_123"
-    create_twin_model(mock_db, company_id, "file_1", [])
+    create_twin_model(mock_db, company_id, "file_1", "gridfs_1", [])
 
     node1 = {"node_id": "node_1", "type": "smelting"}
     node2 = {"node_id": "node_2", "type": "refining"}
@@ -51,7 +49,7 @@ def test_remove_twin_node(mock_db):
 
 def test_remove_twin_node_nonexistent(mock_db):
     company_id = "company_123"
-    create_twin_model(mock_db, company_id, "file_1", [])
+    create_twin_model(mock_db, company_id, "file_1", "gridfs_1", [])
 
     node = {"node_id": "node_1", "type": "smelting"}
     add_twin_node(mock_db, company_id, node)
@@ -64,7 +62,7 @@ def test_remove_twin_node_nonexistent(mock_db):
 
 def test_add_twin_node_updates_timestamp(mock_db):
     company_id = "company_123"
-    twin = create_twin_model(mock_db, company_id, "file_1", [])
+    twin = create_twin_model(mock_db, company_id, "file_1", "gridfs_1", [])
     original_updated_at = twin["updated_at"]
 
     import time
@@ -78,7 +76,7 @@ def test_add_twin_node_updates_timestamp(mock_db):
 
 def test_remove_twin_node_updates_timestamp(mock_db):
     company_id = "company_123"
-    twin = create_twin_model(mock_db, company_id, "file_1", [])
+    twin = create_twin_model(mock_db, company_id, "file_1", "gridfs_1", [])
     original_updated_at = twin["updated_at"]
 
     node = {"node_id": "node_1", "type": "smelting"}
