@@ -349,30 +349,87 @@ Request/response parameter documentation for each endpoint per RFC 001 & RFC 002
 
 ```json
 {
+  "generated_at": "2026-08-11T04:00:00+00:00",
   "horizon_days": 14,
-  "nickel_forecast": {
-    "currency": "USD",
+  "nickel": {
+    "series_id": "lme_nickel",
+    "available": true,
+    "currency_unit": "usd_per_ton",
+    "interval_level": 0.8,
     "points": [
       {
-        "date": "2026-08-05",
-        "price_usd_per_ton": 15400.0,
-        "lower_usd_per_ton": 14900.0,
-        "upper_usd_per_ton": 15900.0
+        "date": "2026-08-11",
+        "value": 15400.0,
+        "lower": 14900.0,
+        "upper": 15900.0
       }
     ],
-    "stale": false
+    "summary": {
+      "start_value": 15400.0,
+      "end_value": 15400.0,
+      "min_value": 15400.0,
+      "max_value": 15400.0,
+      "mean_value": 15400.0
+    },
+    "history": {
+      "lookback_days": 90,
+      "last_value": 15400.0,
+      "points": []
+    },
+    "model": {
+      "name": "nickel_stub",
+      "version": "0.1.0",
+      "artefact_id": null,
+      "trained_at": null
+    },
+    "staleness": {
+      "is_stale": false,
+      "as_of": "2026-08-11T04:00:00+00:00",
+      "max_age_hours": 24.0,
+      "age_hours": 0.0
+    },
+    "disclosures": []
   },
-  "carbon_forecast": {
-    "currency": "IDR",
+  "carbon": {
+    "series_id": "idx_carbon",
+    "available": true,
+    "currency_unit": "idr_per_ton",
+    "interval_level": 0.8,
     "points": [
       {
-        "date": "2026-08-05",
-        "limit_price_idr": 42000.0,
-        "lower_limit_price_idr": 39000.0,
-        "upper_limit_price_idr": 46000.0
+        "date": "2026-08-11",
+        "value": 42000.0,
+        "lower": 39000.0,
+        "upper": 46000.0
       }
     ],
-    "stale": false
+    "summary": {
+      "start_value": 42000.0,
+      "end_value": 42000.0,
+      "min_value": 42000.0,
+      "max_value": 42000.0,
+      "mean_value": 42000.0
+    },
+    "history": {
+      "lookback_days": 90,
+      "last_value": 42000.0,
+      "points": []
+    },
+    "model": {
+      "name": "carbon_stub",
+      "version": "0.1.0",
+      "artefact_id": null,
+      "trained_at": null
+    },
+    "staleness": {
+      "is_stale": false,
+      "as_of": "2026-08-11T04:00:00+00:00",
+      "max_age_hours": 24.0,
+      "age_hours": 0.0
+    },
+    "disclosures": [
+      "Carbon path is a synthetic daily series anchored to published IDX monthly aggregates."
+    ]
   }
 }
 ```
