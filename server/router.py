@@ -1,12 +1,12 @@
 import gridfs
 from deps import get_current_user, get_db
-from fastapi import APIRouter, Depends, File, Query, UploadFile
+from fastapi import APIRouter, Depends, File, Form, HTTPException, Query, UploadFile
 from fastapi.responses import StreamingResponse
 from schemas import (
     AuthResponse,
     CompanyResponse,
     CompanyUpdate,
-    DocumentsResponse,
+    DocumentExtractionResponse,
     EmissionRequest,
     EmissionResponse,
     ForecastsResponse,
@@ -130,13 +130,16 @@ def get_twin_gaps(user=Depends(get_current_user), db=Depends(get_db)):
 # ── Documents ─────────────────────────────────────────────────────────
 
 
-@router.post("/documents", response_model=DocumentsResponse, status_code=201)
-def upload_documents(
-    files: list[UploadFile] = File(...),
+@router.post("/documents", response_model=DocumentExtractionResponse, status_code=201)
+async def upload_document(
+    file: UploadFile = File(...),
+    profile: str = Form(...),
     user=Depends(get_current_user),
     db=Depends(get_db),
 ):
-    return document_service.upload_documents(db, user["company_id"], files)
+    return await document_service.extract_document(
+        db, user["company_id"], file, profile
+    )
 
 
 # ── Emissions ─────────────────────────────────────────────────────────
@@ -179,7 +182,11 @@ def get_forecasts(
 async def get_recommendation(
     run_id: str, user=Depends(get_current_user), db=Depends(get_db)
 ):
-    run_resp = run_service.get_run(db, user["company_id"], run_id)
+    # Load before StreamingResponse so a missing run can still be a 404.
+    try:
+        run_resp = run_service.get_run(db, user["company_id"], run_id)
+    except ValueError as exc:
+        raise HTTPException(status_code=404, detail=str(exc)) from exc
     return StreamingResponse(
         recommendation_service.stream_recommendation(run_resp.run),
         media_type="text/event-stream",

@@ -197,34 +197,37 @@ Request/response parameter documentation for each endpoint per RFC 001 & RFC 002
 ## 4. Documents (`/documents`)
 
 > All requests require header `Authorization: Bearer <jwt>`
+>
+> Helpy Document Vision + Elice Sol interpret. Returns **candidates for review only**
+> — nothing is written to company/run values until the user accepts in the UI.
+> Requires `ELICE_API_KEY`, `ELICE_BASE_URL`, `HELPY_BASE_URL`.
 
-### `POST /documents` — Upload documents
+### `POST /documents` — Extract candidates from one document
 
 **Request:** `multipart/form-data`
 
 |Param|Type|Description|
 |-|-|-|
-|`files[]`|file(s)|required, PDF/image/XLSX|
+|`file`|file|required, PDF/PNG/JPEG/WEBP/PPTX, max 20 MB|
+|`profile`|string|required, `site_spec` or `operational`|
 
 **Response `201`:**
 
 ```json
 {
-  "documents": [
-    { "document_id": "doc_123", "status": "processed" }
-  ],
   "candidates": [
     {
-      "candidate_id": "cand_123",
-      "field_name": "wet_ore_input_tons",
+      "field": "wet_ore_input_tons",
       "value": 42000.0,
       "confidence": 0.93,
-      "owning_process_type": "ORE_STOCKPILE",
-      "routing_status": "routed",
-      "target_node_id": "node_ore_1",
-      "accepted": false
+      "node": "stockpile",
+      "sourceHint": "",
+      "basis": "transcribed",
+      "evidence": "Bijih basah 42.000 ton",
+      "derivation": ""
     }
-  ]
+  ],
+  "confidenceIsPlaceholder": true
 }
 ```
 
@@ -234,6 +237,12 @@ Request/response parameter documentation for each endpoint per RFC 001 & RFC 002
 
 > All requests require header `Authorization: Bearer <jwt>`
 > This route is stateless — no database writes.
+>
+> Uses the RKEF mass/energy calculator in `server/emissions/` (Scope 1 dryer/kiln/reductant, Scope 2 EAF).
+> Fractions must be in `[0, 1]` (e.g. `0.32` for 32% moisture). `power_mix_hydro_grid` is accepted for
+> API compatibility but does not enter the arithmetic (hydro is zero-emission).
+> On `POST /runs`, company `site_spec.kiln_thermal_efficiency` and `site_spec.alloy_nickel_grade`
+> override default process constants when present.
 
 ### `POST /emissions` — Calculate emissions
 

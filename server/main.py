@@ -26,6 +26,9 @@ class AppError(Exception):
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
+    from ai_env import ensure_ai_env
+
+    ensure_ai_env()
     db = get_db()
     if db is not None:
         _ensure_indexes(db)

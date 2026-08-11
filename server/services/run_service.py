@@ -1,7 +1,16 @@
 from fastapi import HTTPException
+from emissions.calculator import calculate_emissions as _calculate_raw
+from emissions.compliance import DEFAULT_CARBON_PRICE_IDR, assess
 from models import create_run, find_company_by_id, find_run_by_id
-from schemas import Compliance, ForecastSnapshot, RunDetail, RunRequest, RunResponse
-from services.emission_service import calculate_emissions
+from schemas import (
+    Compliance,
+    EmissionResult,
+    ForecastSnapshot,
+    RunDetail,
+    RunRequest,
+    RunResponse,
+)
+from services.emission_service import constants_from_site_spec
 from services.forecast_service import get_forecasts
 from services.twin_service import get_gaps
 
@@ -13,22 +22,61 @@ def commit_run(db, company_id: str, user_id: str, req: RunRequest) -> RunRespons
 
     emission_resp = calculate_emissions(req.input_snapshot)
     emission_result = emission_resp.emission_result.model_dump()
+def _to_api_emission_result(raw) -> dict:
+    intensity = raw.intensity_per_tonne_ni
+    return EmissionResult(
+        nickel_output_tons=round(raw.nickel_output_tons, 4),
+        alloy_output_tons=round(raw.alloy_output_tons, 4),
+        dryer_emissions=round(raw.dryer_emissions, 4),
+        kiln_heat_emissions=round(raw.kiln_heat_emissions, 4),
+        kiln_reductant_emissions=round(raw.kiln_reductant_emissions, 4),
+        eaf_emissions=round(raw.eaf_emissions, 4),
+        scope_1=round(raw.scope_1, 4),
+        scope_2=round(raw.scope_2, 4),
+        total_emissions=round(raw.total_emissions, 4),
+        intensity_per_tonne_ni=(round(intensity, 4) if intensity is not None else None),
+        dry_ore_tons=round(raw.dry_ore_tons, 4),
+        dryer_coal_tons=round(raw.dryer_coal_tons, 4),
+        kiln_coal_tons=round(raw.kiln_coal_tons, 4),
+        reductant_tons=round(raw.reductant_tons, 4),
+        eaf_mwh=round(raw.eaf_mwh, 4),
+    ).model_dump()
 
+
+def commit_run(db, company_id: str, user_id: str, req: RunRequest) -> RunResponse:
     company = find_company_by_id(db, company_id)
     if not company:
         raise ValueError("Company not found")
 
-    period_cap = company["period_cap_tco2e"]
-    total = emission_result["total_emissions"]
-    position = period_cap - total
-    status = "surplus" if position >= 0 else "deficit"
-    value_idr = abs(position) * 35200
+    site_spec = company.get("site_spec") or {}
+    constants = constants_from_site_spec(site_spec)
+    snap = req.input_snapshot
+    raw = _calculate_raw(
+        wet_ore_input_tons=snap.wet_ore_input_tons,
+        moisture_content_pct=snap.moisture_content_pct,
+        nickel_grade_pct=snap.nickel_grade_pct,
+        reductant_biocoke_pct=snap.reductant_biocoke_pct,
+        sec_eaf_kwh_per_t_alloy=snap.sec_eaf_kwh_per_t_alloy,
+        power_mix_captive_coal=snap.power_mix_captive_coal,
+        ef_captive_pltu=snap.ef_captive_pltu,
+        dryer_thermal_efficiency=snap.dryer_thermal_efficiency,
+        constants=constants,
+    )
+    emission_result = _to_api_emission_result(raw)
 
+    period_cap = company["period_cap_tco2e"]
+    position = assess(
+        raw,
+        cap_tco2e=period_cap,
+        carbon_price_idr_per_ton=DEFAULT_CARBON_PRICE_IDR,
+    )
+    # Indah API: position_tco2e positive = surplus (cap - projected).
+    api_position = period_cap - position.projected_tco2e
     compliance = Compliance(
         period_cap_tco2e=period_cap,
-        status=status,
-        position_tco2e=position,
-        value_idr=value_idr,
+        status="surplus" if position.is_compliant else "deficit",
+        position_tco2e=api_position,
+        value_idr=position.position_value_idr,
     )
 
     forecasts = get_forecasts(db, horizon_days=14)
