@@ -15,13 +15,6 @@ from services.forecast_service import get_forecasts
 from services.twin_service import get_gaps
 
 
-def commit_run(db, company_id: str, user_id: str, req: RunRequest) -> RunResponse:
-    gaps = get_gaps(db, company_id)
-    if gaps.unbound_required_process_types or gaps.orphan_fields or gaps.ambiguous_fields:
-        raise HTTPException(status_code=422, detail=gaps.model_dump())
-
-    emission_resp = calculate_emissions(req.input_snapshot)
-    emission_result = emission_resp.emission_result.model_dump()
 def _to_api_emission_result(raw) -> dict:
     intensity = raw.intensity_per_tonne_ni
     return EmissionResult(
@@ -44,6 +37,10 @@ def _to_api_emission_result(raw) -> dict:
 
 
 def commit_run(db, company_id: str, user_id: str, req: RunRequest) -> RunResponse:
+    gaps = get_gaps(db, company_id)
+    if gaps.unbound_required_process_types or gaps.orphan_fields or gaps.ambiguous_fields:
+        raise HTTPException(status_code=422, detail=gaps.model_dump())
+
     company = find_company_by_id(db, company_id)
     if not company:
         raise ValueError("Company not found")
