@@ -1,6 +1,6 @@
-from fastapi import HTTPException
 from emissions.calculator import calculate_emissions as _calculate_raw
 from emissions.compliance import DEFAULT_CARBON_PRICE_IDR, assess
+from fastapi import HTTPException
 from models import create_run, find_company_by_id, find_run_by_id
 from schemas import (
     Compliance,
@@ -77,21 +77,19 @@ def commit_run(db, company_id: str, user_id: str, req: RunRequest) -> RunRespons
     )
 
     forecasts = get_forecasts(db, horizon_days=14)
+    nickel_price = (
+        forecasts.nickel.points[0].value
+        if forecasts.nickel.available and forecasts.nickel.points
+        else 0.0
+    )
+    carbon_price = (
+        forecasts.carbon.points[0].value
+        if forecasts.carbon.available and forecasts.carbon.points
+        else 0.0
+    )
     forecast_snapshot = ForecastSnapshot(
-        nickel={
-            "price_usd_per_ton": (
-                forecasts.nickel_forecast.points[0].price_usd_per_ton
-                if forecasts.nickel_forecast.points
-                else 0
-            )
-        },
-        carbon={
-            "limit_price_idr": (
-                forecasts.carbon_forecast.points[0].limit_price_idr
-                if forecasts.carbon_forecast.points
-                else 0
-            )
-        },
+        nickel={"price_usd_per_ton": nickel_price},
+        carbon={"limit_price_idr": carbon_price},
     )
 
     run = create_run(

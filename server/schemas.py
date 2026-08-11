@@ -221,36 +221,59 @@ class RunResponse(BaseModel):
 # ── Forecasts ─────────────────────────────────────────────────────────
 
 
-class NickelPoint(BaseModel):
+class ForecastPoint(BaseModel):
     date: str
-    price_usd_per_ton: float
-    lower_usd_per_ton: float
-    upper_usd_per_ton: float
+    value: float
+    lower: float
+    upper: float
 
 
-class CarbonPoint(BaseModel):
-    date: str
-    limit_price_idr: float
-    lower_limit_price_idr: float
-    upper_limit_price_idr: float
+class ForecastSummary(BaseModel):
+    start_value: float
+    end_value: float
+    min_value: float
+    max_value: float
+    mean_value: float
 
 
-class NickelForecast(BaseModel):
-    currency: str
-    points: list[NickelPoint]
-    stale: bool
+class ForecastHistory(BaseModel):
+    lookback_days: int
+    last_value: float | None = None
+    points: list[ForecastPoint] = Field(default_factory=list)
 
 
-class CarbonForecast(BaseModel):
-    currency: str
-    points: list[CarbonPoint]
-    stale: bool
+class ForecastModelInfo(BaseModel):
+    name: str
+    version: str
+    artefact_id: str | None = None
+    trained_at: str | None = None
+
+
+class ForecastStaleness(BaseModel):
+    is_stale: bool
+    as_of: str | None = None
+    max_age_hours: float | None = None
+    age_hours: float | None = None
+
+
+class ForecastSeries(BaseModel):
+    series_id: str
+    available: bool
+    currency_unit: str
+    interval_level: float
+    points: list[ForecastPoint]
+    summary: ForecastSummary
+    history: ForecastHistory
+    model: ForecastModelInfo
+    staleness: ForecastStaleness
+    disclosures: list[str]
 
 
 class ForecastsResponse(BaseModel):
+    generated_at: str
     horizon_days: int
-    nickel_forecast: NickelForecast
-    carbon_forecast: CarbonForecast
+    nickel: ForecastSeries
+    carbon: ForecastSeries
 
 
 # ── Error ─────────────────────────────────────────────────────────────

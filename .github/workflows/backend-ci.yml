@@ -30,8 +30,42 @@ jobs:
       - name: Run Ruff
         run: ruff check .
 
+      - name: Prepare test env
+        run: cp test/.env.example test/.env
+
       - name: Run Tests
         env:
           PYTHONPATH: .:server
-          MONGO_URI: ${{ secrets.MONGO_URI }}
         run: pytest -vv
+
+
+  docker:
+    name: Build & Run
+    Backend needs: test
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout source
+        uses: actions/checkout@v4
+
+      - name: Build backend image
+        run: docker compose build server
+
+      - name: Start database and backend
+        run: docker compose up -d database server
+
+      - name: Check containers
+        run: docker compose ps
+
+      - name: Wait for backend
+        run: sleep 10
+
+      - name: Check backend API
+        run: curl --fail http://localhost:8000/docs
+
+      - name: Show logs if failed
+        if: failure()
+        run: docker compose logs database server
+        
+      - name: Stop containers
+        if: always()
+        run: docker compose down -v
