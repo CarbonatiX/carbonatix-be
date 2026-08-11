@@ -345,6 +345,8 @@ Request/response parameter documentation for each endpoint per RFC 001 & RFC 002
 |-|-|-|
 |`horizon_days`|int|required, 7–30, default 14|
 
+_Shape matches RFC-006-Nickel-Forecasting-FINAL-v2.md §5 (nickel) and RFC-006-price-forecasting(carbon-only).md §3.2 (carbon)._
+
 **Response `200`:**
 
 ```json
@@ -352,81 +354,79 @@ Request/response parameter documentation for each endpoint per RFC 001 & RFC 002
   "generated_at": "2026-08-11T04:00:00+00:00",
   "horizon_days": 14,
   "nickel": {
-    "series_id": "lme_nickel",
+    "series_id": "nickel_cash_settlement_usd",
     "available": true,
     "currency_unit": "usd_per_ton",
     "interval_level": 0.8,
     "points": [
       {
         "date": "2026-08-11",
-        "value": 15400.0,
-        "lower": 14900.0,
-        "upper": 15900.0
+        "price_usd_per_ton": 15400.0,
+        "lower_usd_per_ton": 14900.0,
+        "upper_usd_per_ton": 15900.0,
+        "provenance": { "bucket": "short", "model_id": "nickel_stub_v0", "cache_status": "miss" }
       }
     ],
     "summary": {
-      "start_value": 15400.0,
-      "end_value": 15400.0,
-      "min_value": 15400.0,
-      "max_value": 15400.0,
-      "mean_value": 15400.0
+      "mean_usd_per_ton": 15400.0,
+      "horizon_end_usd_per_ton": 15400.0,
+      "trend": "flat",
+      "trend_confidence": 0.0,
+      "change_pct": 0.0
     },
     "history": {
-      "lookback_days": 90,
-      "last_value": 15400.0,
-      "points": []
+      "window": ["2026-08-11", "2026-08-11"],
+      "last_observed_price_usd_per_ton": 15400.0,
+      "last_observed_date": "2026-08-11"
     },
     "model": {
-      "name": "nickel_stub",
-      "version": "0.1.0",
-      "artefact_id": null,
-      "trained_at": null
+      "bucket_models": [{ "bucket": "short", "model_class": "stub", "trained_at": "2026-08-11T04:00:00+00:00" }],
+      "dataset_version": "stub",
+      "feature_set_version": "stub",
+      "ruleset_version": "stub_v0"
     },
-    "staleness": {
-      "is_stale": false,
-      "as_of": "2026-08-11T04:00:00+00:00",
-      "max_age_hours": 24.0,
-      "age_hours": 0.0
-    },
+    "staleness": { "is_stale": false, "as_of": "2026-08-11T04:00:00+00:00", "age_hours": 0.0 },
     "disclosures": []
   },
   "carbon": {
-    "series_id": "idx_carbon",
+    "series_id": "idx_carbon_regular",
     "available": true,
     "currency_unit": "idr_per_ton",
     "interval_level": 0.8,
     "points": [
-      {
-        "date": "2026-08-11",
-        "value": 42000.0,
-        "lower": 39000.0,
-        "upper": 46000.0
-      }
+      { "date": "2026-08-11", "price_idr_per_ton": 42000.0, "lower_idr_per_ton": 39000.0, "upper_idr_per_ton": 46000.0 }
     ],
     "summary": {
-      "start_value": 42000.0,
-      "end_value": 42000.0,
-      "min_value": 42000.0,
-      "max_value": 42000.0,
-      "mean_value": 42000.0
+      "mean_idr_per_ton": 42000.0,
+      "horizon_end_idr_per_ton": 42000.0,
+      "last_observed_month": "2026-08",
+      "last_observed_vwap_idr_per_ton": 42000.0,
+      "trend": "flat",
+      "trend_confidence": 0.0,
+      "change_pct": 0.0
     },
-    "history": {
-      "lookback_days": 90,
-      "last_value": 42000.0,
-      "points": []
+    "monthly_anchors": [
+      { "month": "2026-08", "vwap_idr_per_ton": 42000.0, "volume_tco2e": 0.0, "value_idr": 0.0, "transaction_count": 0 }
+    ],
+    "market_depth": {
+      "window": ["2026-08", "2026-08"],
+      "median_monthly_volume_tco2e": 0.0,
+      "max_monthly_volume_tco2e": 0.0,
+      "trailing_12m_volume_tco2e": 0.0
     },
     "model": {
-      "name": "carbon_stub",
-      "version": "0.1.0",
-      "artefact_id": null,
-      "trained_at": null
+      "model_id": "carbon_stub_v0",
+      "model_class": "stub",
+      "prophet_version": "n/a",
+      "trained_at": "2026-08-11T04:00:00+00:00",
+      "training_data": "stub",
+      "generator_seed": 0,
+      "generator_series_sha256": "",
+      "artefact_sha256": "",
+      "band_source": "stub",
+      "band_sigma_monthly_log": 0.0
     },
-    "staleness": {
-      "is_stale": false,
-      "as_of": "2026-08-11T04:00:00+00:00",
-      "max_age_hours": 24.0,
-      "age_hours": 0.0
-    },
+    "staleness": { "is_stale": false, "as_of": "2026-08-11T04:00:00+00:00", "age_hours": 0.0 },
     "disclosures": [
       "Carbon path is a synthetic daily series anchored to published IDX monthly aggregates."
     ]

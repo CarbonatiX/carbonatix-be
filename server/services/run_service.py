@@ -38,7 +38,11 @@ def _to_api_emission_result(raw) -> dict:
 
 def commit_run(db, company_id: str, user_id: str, req: RunRequest) -> RunResponse:
     gaps = get_gaps(db, company_id)
-    if gaps.unbound_required_process_types or gaps.orphan_fields or gaps.ambiguous_fields:
+    if (
+        gaps.unbound_required_process_types
+        or gaps.orphan_fields
+        or gaps.ambiguous_fields
+    ):
         raise HTTPException(status_code=422, detail=gaps.model_dump())
 
     company = find_company_by_id(db, company_id)
@@ -78,12 +82,12 @@ def commit_run(db, company_id: str, user_id: str, req: RunRequest) -> RunRespons
 
     forecasts = get_forecasts(db, horizon_days=14)
     nickel_price = (
-        forecasts.nickel.points[0].value
+        forecasts.nickel.points[0].price_usd_per_ton
         if forecasts.nickel.available and forecasts.nickel.points
         else 0.0
     )
     carbon_price = (
-        forecasts.carbon.points[0].value
+        forecasts.carbon.points[0].price_idr_per_ton
         if forecasts.carbon.available and forecasts.carbon.points
         else 0.0
     )
