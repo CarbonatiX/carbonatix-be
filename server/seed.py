@@ -1,5 +1,6 @@
 from auth import hash_password
 from models import create_company, create_user
+from services.bundled_twin import ensure_bundled_twin
 
 
 def seed_database(db):
@@ -24,5 +25,6 @@ def seed_database(db):
     db.companies.update_one(
         {"_id": company["id"]}, {"$set": {"owner_user_id": user["id"]}}
     )
+    ensure_bundled_twin(db, company["id"])
 
     print("Seeded admin: demo@carbonatix.com / test123!")

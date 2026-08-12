@@ -140,6 +140,11 @@ ANGKA YANG TERSEDIA (gunakan HANYA angka-angka ini; jangan menghitung atau menga
 KLAUSA REGULASI (dikutip verbatim; rujuk dengan nomor pasal):
 {regulation_notice}{clauses}
 
+TIMELINE KEBIJAKAN (tanggal yang boleh disebut):
+{timeline}
+
+{route_instructions}
+
 Tugas Anda: susun rekomendasi strategis dalam Bahasa Indonesia yang menimbang
 posisi karbon terhadap harga pasar, dengan rujukan pasal yang tepat.
 
@@ -152,7 +157,27 @@ Aturan mutlak:
 - Kutip pasal persis seperti tertulis. Jangan memparafrasa klausa hukum.
 - Nyatakan secara eksplisit bahwa PLTU captive saat ini di luar cakupan wajib
   PTBAE-PU, sehingga status ini bersifat kesiapan, bukan pelanggaran berlaku.
+- Jika skor keyakinan rendah diminta, ajukan sebagai pertanyaan kepada
+  pengguna, bukan sebagai saran eksekusi.
 """
+
+_ROUTE_INSTRUCTIONS_DEFICIT = """PERBANDINGAN RUTE DEFISIT (wajib):
+Sistem sudah menghitung biaya beli kredit vs pajak karbon (IDR) dan tonase
+abatemen. Rekomendasikan rute terpilih yang tercantum di angka di atas,
+sebutkan rute yang ditolak beserta angkanya, dan nyatakan abatemen dalam
+tonne saja (bukan rupiah). Jika kedalaman pasar terlampaui, flag itu.
+Jangan merekomendasikan beli kredit hanya karena skrip demo — hanya jika
+harga kredit lebih rendah dari tarif pajak.
+"""
+
+_ROUTE_INSTRUCTIONS_SURPLUS = """Posisi saat ini surplus atau tepat kuota — tidak ada perbandingan rute
+penutupan defisit. Fokus pada mempertahankan kepatuhan.
+"""
+
+_POLICY_TIMELINE = (
+    "- Pajak karbon domestik: tarif acuan dalam angka di atas\n"
+    "- CBAM fase definitif UE: 2026-01-01"
+)
 
 # Shown in place of a genuine "cite this as law" instruction whenever the
 # clauses being injected still carry PLACEHOLDER_SENTINEL. Without this, a
@@ -242,6 +267,7 @@ def build_prompt(
     position: CompliancePosition,
     forecast: dict,
     clauses: list[Clause],
+    route_figures: dict[str, str] | None = None,
 ) -> tuple[str, set[str]]:
     """Assemble the prompt and the set of numerals the model may use."""
     # Position is signed in CompliancePosition (negative = surplus), but the
@@ -270,10 +296,15 @@ def build_prompt(
     }
     if result.intensity_per_tonne_ni is not None:
         figures["Intensitas (tCO2e/tNi)"] = f"{result.intensity_per_tonne_ni:.1f}"
+    if route_figures:
+        figures.update(route_figures)
 
     figures_block = "\n".join(f"- {k}: {v}" for k, v in figures.items())
     clauses_block = "\n\n".join(f"[{c.ref}] {c.title}\n{c.text}" for c in clauses)
     regulation_notice = _PLACEHOLDER_WARNING if _clauses_are_placeholder(clauses) else ""
+    route_instructions = (
+        _ROUTE_INSTRUCTIONS_DEFICIT if route_figures else _ROUTE_INSTRUCTIONS_SURPLUS
+    )
 
     permitted = {v for v in figures.values()}
     permitted |= {_canonical(v) for v in figures.values()}
@@ -287,11 +318,16 @@ def build_prompt(
     # actual occurrence of the ref text in the output -- never globally.
     for c in clauses:
         permitted.add(f"{_CITATION_PREFIX}{c.ref}")
+    # Timeline year digits that may appear in recommendations.
+    permitted.add("2026")
+    permitted.add(f"{_CITATION_PREFIX}2026-01-01")
 
     text = _TEMPLATE.format(
         figures=figures_block,
         regulation_notice=regulation_notice,
         clauses=clauses_block,
+        timeline=_POLICY_TIMELINE,
+        route_instructions=route_instructions,
     )
     return text, permitted
 

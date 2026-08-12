@@ -1,206 +1,190 @@
-# CarbonatiX ERP
+# CarbonatiX Backend
 
-Carbon emission monitoring and management platform with digital twin simulation.
+FastAPI API for CarbonatiX / SmartSmelt: auth, company site-spec, digital twin metadata, document extraction, RKEF emissions & compliance, forecast stubs, and the regulatory advisor (SSE).
 
-## Tech Stack
-
-- **Backend:** Python 3.14, FastAPI, Uvicorn
-- **Frontend:** Streamlit
-- **Database:** MongoDB
-- **DevOps:** Docker, Docker Compose
+The product UI lives in the sibling repo **`carbonatix-fe`** (Next.js), not in this repository.
 
 ## Prerequisites
 
-- [Docker](https://www.docker.com/get-started/) with Docker Compose
-- Python 3.14+ (for local development)
-- [Zeroconf](https://pypi.org/project/zeroconf/) (for `carbonatix.local` domain)
+- **Python 3.12+** (CI targets 3.12; 3.13/3.14 usually work)
+- **MongoDB** (local install or Docker)
+- Optional: **Docker** / Docker Compose (Mongo only is enough for local API work)
+- Optional: **Elice** + **Helpy** credentials for advisor SSE and document OCR
 
-## Quick Start
+## Quick start
 
-### 1. Clone the repository
+### 1. Clone and enter the repo
 
 ```bash
-git clone https://github.com/CarbonatiX/carbonatix-be.git
 cd carbonatix-be
 ```
 
-### 2. Create environment files
-
-Create `.env` in the project root:
-
-```env
-HOST_IP=172.16.35.188
-```
-
-Create `server/.env`:
-
-```env
-MONGODB_URI=mongodb://<username>:<password>@<host>:27017/?ssl=true&authSource=admin
-MONGODB_DB_NAME=carbonatix-db
-JWT_SECRET_KEY=your-secret-key-here
-```
-
-### 3. Start with Docker Compose
+### 2. Environment
 
 ```bash
-docker compose up -d
+cp server/.env.example server/.env
 ```
 
-This starts three services:
+Edit `server/.env`:
 
-| Service | Container | URL |
-|---------|-----------|-----|
-| Frontend (Streamlit) | carbonatix-frontend | http://localhost |
-| Backend (FastAPI) | carbonatix-api | http://localhost:8000 |
-| Database (MongoDB) | carbonatix-db | localhost:27017 |
+| Variable | Required | Purpose |
+|----------|----------|---------|
+| `MONGODB_URI` | Yes | Mongo connection string |
+| `MONGODB_DB_NAME` | Yes | Database name |
+| `JWT_SECRET_KEY` | Yes | Long random string for JWT signing |
+| `ELICE_API_KEY` | No* | Advisor + document interpret |
+| `ELICE_BASE_URL` | No* | Elice OpenAI-compatible base URL |
+| `ELICE_MODEL` | No | Defaults to `gpt-5.6-sol` |
+| `HELPY_BASE_URL` | No* | Helpy Document Vision (OCR) |
 
-### 4. Access the application
+\*Without Elice/Helpy, register → emissions → commit run still works; recommendation SSE and document OCR fail cleanly.
 
-Open **http://localhost** in your browser.
+### 3. Start MongoDB
 
-## Local Domain Setup (`carbonatix.local`)
+Preferred (Compose database service only — the `frontend` Compose service is a legacy Streamlit image and is not the MVP UI):
 
-To access the app via `http://carbonatix.local` instead of `http://localhost`:
-
-### On your machine
-
-Add this line to your hosts file:
-
-- **Windows:** `C:\Windows\System32\drivers\etc\hosts`
-- **Linux/macOS:** `/etc/hosts`
-
-```
-127.0.0.1 carbonatix.local
+```bash
+docker compose up -d database
 ```
 
-### On other devices (LAN)
+Point `MONGODB_URI` at `mongodb://localhost:27017` (or your Atlas / remote URI).
 
-Run the mDNS broadcaster from your development machine:
+### 4. Install and run the API
+
+From the **repo root** (`carbonatix-be`):
+
+```bash
+python -m venv .venv
+# Windows:
+.venv\Scripts\activate
+# macOS/Linux:
+# source .venv/bin/activate
+
+pip install -r requirements.txt
+```
+
+Run Uvicorn with `server` on `PYTHONPATH` (matches how tests resolve imports):
+
+```bash
+# Windows PowerShell
+$env:PYTHONPATH = ".;server"
+uvicorn server.main:app --reload --port 8000
+
+# macOS/Linux
+export PYTHONPATH=".:server"
+uvicorn server.main:app --reload --port 8000
+```
+
+Equivalent alternative — run from the `server` package directory:
+
+```bash
+cd server
+uvicorn main:app --reload --port 8000
+```
+
+### 5. Verify
+
+| Check | URL / command |
+|-------|----------------|
+| Health | `GET http://localhost:8000/health` |
+| OpenAPI | http://localhost:8000/docs |
+
+On first start with an empty DB, [server/seed.py](server/seed.py) creates a demo admin (if no users exist yet):
+
+- **Email:** `demo@carbonatix.com`
+- **Password:** `test123!`
+
+Registering a new user also seeds the five bundled twin process nodes so form-path `POST /runs` is not blocked.
+
+## Pair with the frontend
+
+In `carbonatix-fe`:
+
+```bash
+cp .env.example .env.local
+# NEXT_PUBLIC_API_URL=http://localhost:8000
+npm install
+npm run dev
+```
+
+Open the Next.js app (typically http://localhost:3000).
+
+**Demo / QA click-paths** for surplus, deficit, OCR-off, advisor-down, etc.: see [`../docs/USER_FLOWS_MVP.md`](../docs/USER_FLOWS_MVP.md).
+
+## Tests
+
+From `carbonatix-be` (uses mongomock; no live Mongo required):
+
+```bash
+pytest
+```
+
+## API surface (MVP)
+
+| Area | Prefix | Notes |
+|------|--------|--------|
+| Auth | `POST /auth/register`, `POST /auth/login` | JWT Bearer |
+| Company | `GET` / `PUT /company` | Site spec + period cap |
+| Twin | `/twin/model`, `/twin/nodes`, `/twin/gaps` | Bundled nodes auto-seeded for form path |
+| Documents | `POST /documents` | OCR when Helpy/Elice configured |
+| Emissions | `POST /emissions` | Stateless RKEF calculator |
+| Runs | `POST /runs`, `GET /runs/{id}` | Immutable snapshot + forecast stub |
+| Forecasts | `GET /forecasts` | Stub Ni + carbon series (disclosed synthetic) |
+| Advisor | `GET /runs/{id}/recommendation` | SSE; requires Elice |
+
+Stub market figures used for compliance valuation and advisor routes (see `server/pricing.py`): carbon **42,000 IDR/t**, nickel **15,400 USD/t**, carbon tax **30,000 IDR/t**.
+
+## Project layout
+
+```
+carbonatix-be/
+├── server/                 # FastAPI app
+│   ├── main.py             # Entry + lifespan (indexes + seed)
+│   ├── config.py           # Settings from server/.env
+│   ├── .env.example        # Template (copy to .env)
+│   ├── router.py           # HTTP routes
+│   ├── emissions/          # Calculator + compliance
+│   ├── advisor/            # Corpus, prompt, SSE pipeline
+│   ├── ingestion/          # Document vision / mapping
+│   ├── models/             # Mongo helpers
+│   └── services/           # Domain services
+├── test/                   # pytest
+├── mdns/                   # Optional LAN mDNS helper
+├── compose.yaml            # Mongo (+ legacy API/Streamlit images)
+├── Dockerfile              # API image
+└── requirements.txt
+```
+
+## Advisor behaviour
+
+- Model default: **`gpt-5.6-sol`** via Elice (`ELICE_MODEL` overrides).
+- Missing Elice config → synthesise/assemble fails; emission and compliance panels must still stand (FE shows “rekomendasi tidak tersedia”).
+- Deficit runs include buy vs tax vs abate figures; with stub prices, **tax wins** (42k > 30k).
+
+## Optional: API in Docker
+
+```bash
+docker compose up -d database server
+```
+
+Ensure `server/.env` matches the Compose network (for the `server` service, Mongo host is often `database` rather than `localhost`). The Compose **`frontend`** service is legacy Streamlit — use `carbonatix-fe` instead.
+
+## Optional: `carbonatix.local` (mDNS)
+
+For LAN demos only. Add `127.0.0.1 carbonatix.local` to your hosts file, then:
 
 ```bash
 pip install zeroconf
-
 cd mdns
 HOST_IP=<your-lan-ip> python publish.py
 ```
 
-Replace `<your-lan-ip>` with your machine's WiFi/LAN IP (e.g., `172.16.35.188`).
-
-To find your LAN IP:
-
-- **Windows:** `ipconfig` → look for IPv4 under WiFi adapter
-- **Linux/macOS:** `ip addr show` or `ifconfig`
-
-To disable: press `Ctrl+C` in the terminal running `publish.py`.
-
-## Development
-
-### Run without Docker
-
-**Backend:**
-
-```bash
-cd server
-python -m venv .venv
-source .venv/bin/activate  # Windows: .venv\Scripts\activate
-pip install -r ../requirements.txt
-uvicorn server.main:app --reload --port 8000
-```
-
-**Frontend:**
-
-```bash
-cd client
-pip install streamlit httpx
-streamlit run app.py --server.port 8501
-```
-
-### Useful Docker commands
-
-```bash
-# View logs
-docker compose logs -f
-
-# Restart a specific service
-docker compose restart server
-
-# Stop all services
-docker compose down
-
-# Rebuild and restart
-docker compose up -d --build
-
-# View running containers
-docker compose ps
-```
-
-## Project Structure
-
-```
-carbonatix-be/
-├── server/                 # FastAPI backend
-│   ├── main.py            # App entry point
-│   ├── config.py          # Environment settings
-│   ├── database.py        # MongoDB connection
-│   ├── auth.py            # Authentication
-│   ├── router.py          # API routes
-│   ├── schemas.py         # Pydantic schemas
-│   ├── models/            # Data models
-│   └── services/          # Business logic
-├── client/                # Streamlit frontend
-│   ├── app.py             # Main app
-│   ├── api.py             # API client
-│   └── pages/             # Page components
-├── mdns/                  # mDNS broadcaster
-│   └── publish.py         # Broadcasts carbonatix.local on LAN
-├── compose.yaml           # Docker Compose config
-├── Dockerfile             # Backend container
-├── Dockerfile.streamlit   # Frontend container
-└── requirements.txt       # Python dependencies
-```
-
-## API Endpoints
-
-| Module | Prefix | Description |
-|--------|--------|-------------|
-| Auth | `/auth` | Login, Register, Approval |
-| Company | `/company` | Company profile |
-| Twin Model | `/twin` | Node models and 3D simulation |
-| Documents | `/documents` | Document upload & extraction |
-| Emissions | `/emissions` | Emission monitoring |
-| Runs | `/runs` | Calculation runs |
-| Forecasts | `/forecasts` | Emission forecasts |
-| Recommendations | `/runs/{run_id}/recommendation` | Recommendations |
-
 ## Troubleshooting
 
-**Port already in use:**
+**Mongo connection refused** — confirm `docker compose ps database` (or local `mongod`) and that `MONGODB_URI` matches.
 
-```bash
-# Find process using the port
-# Windows:
-netstat -ano | findstr :80
-# Linux/macOS:
-lsof -i :80
+**`POST /runs` 422 with gaps** — new accounts get bundled twin nodes automatically; orphan document process types that are not on the twin still block commit.
 
-# Kill the process or change the port in compose.yaml
-```
+**Advisor empty** — set `ELICE_API_KEY` and `ELICE_BASE_URL` (model-specific deployment URL). OCR also needs `HELPY_BASE_URL`.
 
-**Container won't start:**
-
-```bash
-docker compose logs <service-name>
-```
-
-**MongoDB connection refused:**
-
-Ensure `server/.env` has the correct `MONGODB_URI` and the database container is running:
-
-```bash
-docker compose ps database
-```
-
-**`carbonatix.local` not resolving:**
-
-- Verify hosts file entry exists and is correct
-- Flush DNS cache: `ipconfig /flushdns` (Windows) or `sudo systemd-resolve --flush-caches` (Linux)
+**Port 8000 in use** — change `--port` or stop the other process (`netstat -ano | findstr :8000` on Windows).

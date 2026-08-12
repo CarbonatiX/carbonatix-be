@@ -188,6 +188,8 @@ async def get_recommendation(
     except ValueError as exc:
         raise HTTPException(status_code=404, detail=str(exc)) from exc
     return StreamingResponse(
-        recommendation_service.stream_recommendation(run_resp.run),
+        recommendation_service.stream_recommendation(
+            db, run_resp.run, user["company_id"]
+        ),
         media_type="text/event-stream",
     )

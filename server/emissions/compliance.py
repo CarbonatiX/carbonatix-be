@@ -7,8 +7,10 @@ from emissions.calculator import EmissionResult
 
 __all__ = ["CompliancePosition", "assess", "suggest_cap_from_baseline"]
 
-# Default IDX-style carbon price used when company has no override (IDR / tCO2e).
-DEFAULT_CARBON_PRICE_IDR = 35_200.0
+from pricing import STUB_CARBON_PRICE_IDR
+
+# Same stub used by forecast_service / advisor (disclosed as synthetic on UI).
+DEFAULT_CARBON_PRICE_IDR = STUB_CARBON_PRICE_IDR
 
 
 @dataclass(frozen=True)

@@ -44,6 +44,18 @@ CORPUS: list[Clause] = [
         applies_to='deficit',
     ),
     Clause(
+        ref='Perpres 98/2021 Pasal 1 angka 22',
+        title='perpres-98-2021 pajak karbon',
+        text='Pajak Karbon adalah pajak yang dikenakan atas emisi karbon yang memberikan dampak negatif bagi lingkungan hidup.',
+        applies_to='deficit',
+    ),
+    Clause(
+        ref='Perpres 98/2021 Pasal 58',
+        title='perpres-98-2021 perdagangan karbon',
+        text='Pelaku usaha dapat memenuhi kewajiban pengurangan Emisi GRK melalui perdagangan karbon dan/atau pembayaran pajak karbon sesuai dengan ketentuan peraturan perundang-undangan.',
+        applies_to='deficit',
+    ),
+    Clause(
         ref='Permen ESDM 2/2023 Pasal 1 angka 10',
         title='permen-esdm-2-2023 Pasal 1 angka 10',
         text='Penangkapan dan Penyimpanan Karbon (Carbon Capture and Storage) yang selanjutnya disingkat CCS adalah kegiatan mengurangi Emisi GRK yang mencakup penangkapan Emisi Karbon dan/atau pengangkutan Emisi Karbon tertangkap, dan penyimpanan ke Zona Target Injeksi dengan aman dan permanen sesuai dengan kaidah keteknikan yang baik.',

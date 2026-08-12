@@ -22,7 +22,9 @@ NOMINAL = {
 
 FORECAST = {
     "lmeUsdPerTon": [15400.0],
-    "idxCarbonIdrPerTon": [35200.0],
+    "idxCarbonIdrPerTon": [42000.0],
+    "taxRateIdrPerTon": 30000.0,
+    "marketDepthMedianTco2e": 50000.0,
     "synthetic": True,
     "provenance": {"lmeUsdPerTon": {"synthetic": True}},
 }
@@ -130,3 +132,59 @@ def test_corpus_has_verified_clauses():
 
     assert len(CORPUS) >= 5
     assert has_placeholder_text() is False
+
+
+def test_deficit_route_prefers_tax_when_credit_above_tax():
+    from advisor.routes import build_route_comparison
+
+    routes = build_route_comparison(
+        deficit_tco2e=1000.0,
+        carbon_price_idr=42000.0,
+        tax_rate_idr=30000.0,
+        market_depth_median_tco2e=50000.0,
+    )
+    assert routes is not None
+    assert routes.chosen_route == "pay_tax"
+    assert routes.rejected_route == "buy"
+    assert routes.buy_cost_idr == 42_000_000.0
+    assert routes.tax_cost_idr == 30_000_000.0
+    assert routes.exceeds_observed_depth is False
+
+
+def test_deficit_route_prefers_buy_when_credit_below_tax():
+    from advisor.routes import build_route_comparison
+
+    routes = build_route_comparison(
+        deficit_tco2e=1000.0,
+        carbon_price_idr=25000.0,
+        tax_rate_idr=30000.0,
+        market_depth_median_tco2e=50000.0,
+    )
+    assert routes is not None
+    assert routes.chosen_route == "buy"
+    assert routes.rejected_route == "pay_tax"
+
+
+def test_invented_numeral_flags_verify(monkeypatch, result_and_position):
+    from advisor import pipeline
+
+    r, pos = result_and_position
+    # Force deficit so route figures are assembled.
+    from emissions.compliance import assess
+
+    pos = assess(r, cap_tco2e=max(0.0, r.total_emissions - 5000), carbon_price_idr_per_ton=42000.0)
+    monkeypatch.setenv("ELICE_API_KEY", "test-key")
+    monkeypatch.setenv("ELICE_BASE_URL", "https://gateway.example/uuid/v1")
+    monkeypatch.setattr(
+        pipeline,
+        "AsyncOpenAI",
+        _fake_openai(_Captured(), content="Bayar denda 999999999 ton."),
+    )
+
+    events = _collect(r, pos, FORECAST)
+    verify = next(e for e in events if e["stage"] == "verify" and e["status"] == "done")
+    assert verify["payload"]["flagged"] is True
+    assert "999999999" in verify["payload"]["unsupported"]
+    assemble = next(e for e in events if e["stage"] == "assemble" and e["status"] == "done")
+    assert assemble["payload"]["routeComparison"]["chosen_route"] == "pay_tax"
+    assert isinstance(verify["payload"]["citations"], list)

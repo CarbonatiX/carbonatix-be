@@ -19,6 +19,7 @@ from schemas import (
     TwinNodesUpdate,
     TwinPart,
 )
+from services.bundled_twin import REQUIRED_PROCESS_TYPES
 
 
 def upload_model(
@@ -99,6 +100,8 @@ def get_gaps(db, company_id: str) -> TwinGapsResponse:
                 doc_process_types.add(pt)
 
     twin = find_twin_by_company(db, company_id)
+    required = set(REQUIRED_PROCESS_TYPES)
+
     if not twin:
         orphan_fields = [
             OrphanField(
@@ -110,14 +113,15 @@ def get_gaps(db, company_id: str) -> TwinGapsResponse:
             for c in doc.get("extraction", {}).get("candidates", [])
             if c.get("owning_process_type")
         ]
+        # RFC-004: unbound = static catalog with no nodes, plus any doc-owned types.
         return TwinGapsResponse(
-            unbound_required_process_types=list(doc_process_types),
+            unbound_required_process_types=sorted(required | doc_process_types),
             orphan_fields=orphan_fields,
             ambiguous_fields=[],
         )
 
     node_process_types = {n["process_type"] for n in twin.get("nodes", [])}
-    unbound = doc_process_types - node_process_types
+    unbound = (required - node_process_types) | (doc_process_types - node_process_types)
 
     orphan_fields = [
         OrphanField(
@@ -147,7 +151,7 @@ def get_gaps(db, company_id: str) -> TwinGapsResponse:
     ]
 
     return TwinGapsResponse(
-        unbound_required_process_types=list(unbound),
+        unbound_required_process_types=sorted(unbound),
         orphan_fields=orphan_fields,
         ambiguous_fields=ambiguous_fields,
     )

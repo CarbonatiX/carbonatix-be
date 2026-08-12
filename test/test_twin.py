@@ -85,7 +85,9 @@ def test_get_gaps_unbound_and_orphan(mock_db):
 
     gaps = twin_service.get_gaps(mock_db, "company_123")
 
-    assert gaps.unbound_required_process_types == ["ROTARY_DRYER"]
+    assert "ROTARY_DRYER" in gaps.unbound_required_process_types
+    assert "ELECTRIC_ARC_FURNACE" in gaps.unbound_required_process_types
+    assert "ORE_STOCKPILE" not in gaps.unbound_required_process_types
     assert len(gaps.orphan_fields) == 1
     assert gaps.orphan_fields[0].field_name == "dryer_thermal_efficiency"
     assert gaps.orphan_fields[0].document_id == "doc_1"
@@ -120,50 +122,46 @@ def test_get_gaps_ambiguous(mock_db):
 
     gaps = twin_service.get_gaps(mock_db, "company_123")
 
-    assert gaps.unbound_required_process_types == []
+    assert "ROTARY_KILN" not in gaps.unbound_required_process_types
     assert gaps.orphan_fields == []
     assert len(gaps.ambiguous_fields) == 1
     assert set(gaps.ambiguous_fields[0].candidate_node_ids) == {"node_k1", "node_k2"}
 
 
 def test_post_twin_nodes(client, auth_headers, mock_db):
-    # company_id comes from JWT after register; seed twin for that company
-    from server.models.user import find_user_by_email
-
-    user = find_user_by_email(mock_db, "user@example.com")
-    create_twin_model(mock_db, user["company_id"], "plant.glb", "gridfs_1", [])
-
+    # Register seeds a bundled twin; add an extra node onto it.
     response = client.post(
         "/twin/nodes",
         headers=auth_headers,
-        json=_node("node_ore_1", "ORE_STOCKPILE"),
+        json=_node("node_ore_extra", "ORE_STOCKPILE"),
     )
 
     assert response.status_code == 201
     body = response.json()
     assert body["twin_model_id"].startswith("twin_")
-    assert body["nodes"][0]["node_id"] == "node_ore_1"
-    assert body["nodes"][0]["process_type"] == "ORE_STOCKPILE"
+    assert any(n["node_id"] == "node_ore_extra" for n in body["nodes"])
 
 
 def test_delete_twin_nodes(client, auth_headers, mock_db):
-    from server.models.user import find_user_by_email
-
-    user = find_user_by_email(mock_db, "user@example.com")
-    create_twin_model(mock_db, user["company_id"], "plant.glb", "gridfs_1", [])
     client.post(
         "/twin/nodes",
         headers=auth_headers,
-        json=_node("node_1", "EAF"),
+        json=_node("node_temp", "EAF"),
     )
 
-    response = client.delete("/twin/nodes/node_1", headers=auth_headers)
+    response = client.delete("/twin/nodes/node_temp", headers=auth_headers)
 
     assert response.status_code == 200
-    assert response.json()["nodes"] == []
+    assert all(n["node_id"] != "node_temp" for n in response.json()["nodes"])
 
 
 def test_upload_twin_model_persists_to_gridfs(client, auth_headers, mock_db, monkeypatch):
+    from server.models.user import find_user_by_email
+
+    user = find_user_by_email(mock_db, "user@example.com")
+    # Register already seeds a bundled twin; clear it so upload can create one.
+    mock_db.twin_models.delete_many({"company_id": user["company_id"]})
+
     fake_oid = ObjectId()
     fake_fs = MagicMock()
     fake_fs.put.return_value = fake_oid
@@ -182,9 +180,6 @@ def test_upload_twin_model_persists_to_gridfs(client, auth_headers, mock_db, mon
     fake_fs.put.assert_called_once()
     assert fake_fs.put.call_args.args[0] == b"glb-bytes-here"
 
-    from server.models.user import find_user_by_email
-
-    user = find_user_by_email(mock_db, "user@example.com")
     twin = mock_db.twin_models.find_one({"company_id": user["company_id"]})
     assert twin["gridfs_id"] == str(fake_oid)
 
@@ -195,7 +190,7 @@ def test_commit_run_blocked_by_gaps(
     from server.models.user import find_user_by_email
 
     user = find_user_by_email(mock_db, "user@example.com")
-    create_twin_model(mock_db, user["company_id"], "plant.glb", "gridfs_1", [])
+    # Document field owned by a process type that is not on the twin catalog.
     mock_db.documents.insert_one(
         {
             "_id": "doc_gap",
@@ -205,7 +200,7 @@ def test_commit_run_blocked_by_gaps(
                 "candidates": [
                     {
                         "field_name": "energy",
-                        "owning_process_type": "CAPTIVE_POWER",
+                        "owning_process_type": "UNKNOWN_UNIT",
                         "value": 100,
                         "confidence": 0.9,
                     }
@@ -222,18 +217,14 @@ def test_commit_run_blocked_by_gaps(
 
     assert response.status_code == 422
     detail = response.json()["detail"]
-    assert "CAPTIVE_POWER" in detail["unbound_required_process_types"]
+    assert "UNKNOWN_UNIT" in detail["unbound_required_process_types"]
     assert detail["orphan_fields"][0]["field_name"] == "energy"
 
 
 def test_commit_run_succeeds_without_gaps(
     client, auth_headers, mock_db, sample_emission_request
 ):
-    from server.models.user import find_user_by_email
-
-    user = find_user_by_email(mock_db, "user@example.com")
-    create_twin_model(mock_db, user["company_id"], "plant.glb", "gridfs_1", [])
-
+    # Register seeds bundled twin nodes — form path should commit cleanly.
     response = client.post(
         "/runs",
         headers=auth_headers,
@@ -242,3 +233,5 @@ def test_commit_run_succeeds_without_gaps(
 
     assert response.status_code == 201
     assert "run" in response.json()
+    assert response.json()["run"]["forecast_snapshot"]["carbon"]["limit_price_idr"] == 42000.0
+    assert response.json()["run"]["forecast_snapshot"]["carbon"]["tax_rate_idr"] == 30000.0

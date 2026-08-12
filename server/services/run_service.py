@@ -2,6 +2,7 @@ from emissions.calculator import calculate_emissions as _calculate_raw
 from emissions.compliance import DEFAULT_CARBON_PRICE_IDR, assess
 from fastapi import HTTPException
 from models import create_run, find_company_by_id, find_run_by_id
+from pricing import CARBON_TAX_RATE_IDR
 from schemas import (
     Compliance,
     EmissionResult,
@@ -37,6 +38,11 @@ def _to_api_emission_result(raw) -> dict:
 
 
 def commit_run(db, company_id: str, user_id: str, req: RunRequest) -> RunResponse:
+    from services.bundled_twin import ensure_bundled_twin
+
+    # Form-path MVP: FE never authors /twin/nodes — ensure catalog bindings exist.
+    ensure_bundled_twin(db, company_id)
+
     gaps = get_gaps(db, company_id)
     if (
         gaps.unbound_required_process_types
@@ -65,11 +71,18 @@ def commit_run(db, company_id: str, user_id: str, req: RunRequest) -> RunRespons
     )
     emission_result = _to_api_emission_result(raw)
 
+    forecasts = get_forecasts(db, horizon_days=14)
+    carbon_price = (
+        forecasts.carbon.summary.last_observed_vwap_idr_per_ton
+        if forecasts.carbon.available and forecasts.carbon.summary
+        else DEFAULT_CARBON_PRICE_IDR
+    )
+
     period_cap = company["period_cap_tco2e"]
     position = assess(
         raw,
         cap_tco2e=period_cap,
-        carbon_price_idr_per_ton=DEFAULT_CARBON_PRICE_IDR,
+        carbon_price_idr_per_ton=carbon_price,
     )
     # Indah API: position_tco2e positive = surplus (cap - projected).
     api_position = period_cap - position.projected_tco2e
@@ -80,20 +93,28 @@ def commit_run(db, company_id: str, user_id: str, req: RunRequest) -> RunRespons
         value_idr=position.position_value_idr,
     )
 
-    forecasts = get_forecasts(db, horizon_days=14)
     nickel_price = (
         forecasts.nickel.points[0].price_usd_per_ton
         if forecasts.nickel.available and forecasts.nickel.points
         else 0.0
     )
-    carbon_price = (
+    snapshot_carbon = (
         forecasts.carbon.points[0].price_idr_per_ton
         if forecasts.carbon.available and forecasts.carbon.points
+        else carbon_price
+    )
+    market_depth = (
+        forecasts.carbon.market_depth.median_monthly_volume_tco2e
+        if forecasts.carbon.available and forecasts.carbon.market_depth
         else 0.0
     )
     forecast_snapshot = ForecastSnapshot(
         nickel={"price_usd_per_ton": nickel_price},
-        carbon={"limit_price_idr": carbon_price},
+        carbon={
+            "limit_price_idr": snapshot_carbon,
+            "tax_rate_idr": CARBON_TAX_RATE_IDR,
+            "market_depth_median_tco2e": market_depth,
+        },
     )
 
     run = create_run(

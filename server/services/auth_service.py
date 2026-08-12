@@ -27,6 +27,9 @@ def register(db, req: RegisterRequest) -> AuthResponse:
     db.companies.update_one(
         {"_id": company["id"]}, {"$set": {"owner_user_id": user["id"]}}
     )
+    from services.bundled_twin import ensure_bundled_twin
+
+    ensure_bundled_twin(db, company["id"])
 
     token = create_token(user["id"], company["id"], req.email, role="admin")
     return AuthResponse(

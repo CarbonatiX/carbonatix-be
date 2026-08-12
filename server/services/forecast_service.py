@@ -1,6 +1,17 @@
 from datetime import datetime, timedelta, timezone
 
 from models import get_latest_forecast
+from pricing import (
+    STUB_CARBON_LOWER_IDR,
+    STUB_CARBON_PRICE_IDR,
+    STUB_CARBON_UPPER_IDR,
+    STUB_MAX_MONTHLY_VOLUME_TCO2E,
+    STUB_MEDIAN_MONTHLY_VOLUME_TCO2E,
+    STUB_NICKEL_LOWER_USD,
+    STUB_NICKEL_PRICE_USD,
+    STUB_NICKEL_UPPER_USD,
+    STUB_TRAILING_12M_VOLUME_TCO2E,
+)
 from schemas import (
     CarbonForecast,
     CarbonMarketDepth,
@@ -19,12 +30,12 @@ from schemas import (
     Staleness,
 )
 
-_NICKEL_STUB_PRICE = 15400.0
-_NICKEL_STUB_LOWER = 14900.0
-_NICKEL_STUB_UPPER = 15900.0
-_CARBON_STUB_PRICE = 42000.0
-_CARBON_STUB_LOWER = 39000.0
-_CARBON_STUB_UPPER = 46000.0
+_NICKEL_STUB_PRICE = STUB_NICKEL_PRICE_USD
+_NICKEL_STUB_LOWER = STUB_NICKEL_LOWER_USD
+_NICKEL_STUB_UPPER = STUB_NICKEL_UPPER_USD
+_CARBON_STUB_PRICE = STUB_CARBON_PRICE_IDR
+_CARBON_STUB_LOWER = STUB_CARBON_LOWER_IDR
+_CARBON_STUB_UPPER = STUB_CARBON_UPPER_IDR
 
 
 def _bucket_for_offset(day_offset: int) -> str:
@@ -123,9 +134,9 @@ def _build_carbon(*, dates: list[str], generated_at: str) -> CarbonForecast:
         ],
         market_depth=CarbonMarketDepth(
             window=(last_observed_month, last_observed_month),
-            median_monthly_volume_tco2e=0.0,
-            max_monthly_volume_tco2e=0.0,
-            trailing_12m_volume_tco2e=0.0,
+            median_monthly_volume_tco2e=STUB_MEDIAN_MONTHLY_VOLUME_TCO2E,
+            max_monthly_volume_tco2e=STUB_MAX_MONTHLY_VOLUME_TCO2E,
+            trailing_12m_volume_tco2e=STUB_TRAILING_12M_VOLUME_TCO2E,
         ),
         model=CarbonModelMeta(
             model_id="carbon_stub_v0",
