@@ -1,11 +1,12 @@
+import gridfs
 from deps import get_current_user, get_db
-from fastapi import APIRouter, Depends, File, Query, UploadFile
+from fastapi import APIRouter, Depends, File, Form, HTTPException, Query, UploadFile
 from fastapi.responses import StreamingResponse
 from schemas import (
     AuthResponse,
     CompanyResponse,
     CompanyUpdate,
-    DocumentsResponse,
+    DocumentExtractionResponse,
     EmissionRequest,
     EmissionResponse,
     ForecastsResponse,
@@ -15,6 +16,7 @@ from schemas import (
     RunResponse,
     TwinGapsResponse,
     TwinModelResponse,
+    TwinNode,
     TwinNodesResponse,
     TwinNodesUpdate,
 )
@@ -72,12 +74,25 @@ def update_company(
 
 
 @router.post("/twin/model", response_model=TwinModelResponse, status_code=201)
-def upload_twin_model(
+async def upload_twin_model(
     file: UploadFile = File(...), user=Depends(get_current_user), db=Depends(get_db)
 ):
+    file_data = await file.read()
+
+    fs = gridfs.GridFS(db)
+    gridfs_id = fs.put(
+        file_data,
+        filename=file.filename or "uploaded_model",
+        content_type=file.content_type or "application/octet-stream",
+    )
+
     parts = [{"mesh_ref": "mesh_default", "label": file.filename or "uploaded_model"}]
     return twin_service.upload_model(
-        db, user["company_id"], file_id=file.filename or "unknown", parts=parts
+        db,
+        user["company_id"],
+        file_id=file.filename or "unknown",
+        gridfs_id=str(gridfs_id),
+        parts=parts,
     )
 
 
@@ -86,11 +101,25 @@ def get_twin_nodes(user=Depends(get_current_user), db=Depends(get_db)):
     return twin_service.get_nodes(db, user["company_id"])
 
 
+@router.post("/twin/nodes", response_model=TwinNodesResponse, status_code=201)
+def add_twin_node(
+    req: TwinNode, user=Depends(get_current_user), db=Depends(get_db)
+):
+    return twin_service.add_node(db, user["company_id"], req)
+
+
 @router.put("/twin/nodes", response_model=TwinNodesResponse)
 def update_twin_nodes(
     req: TwinNodesUpdate, user=Depends(get_current_user), db=Depends(get_db)
 ):
     return twin_service.update_nodes(db, user["company_id"], req)
+
+
+@router.delete("/twin/nodes/{node_id}", response_model=TwinNodesResponse)
+def delete_twin_node(
+    node_id: str, user=Depends(get_current_user), db=Depends(get_db)
+):
+    return twin_service.remove_node(db, user["company_id"], node_id)
 
 
 @router.get("/twin/gaps", response_model=TwinGapsResponse)
@@ -101,13 +130,16 @@ def get_twin_gaps(user=Depends(get_current_user), db=Depends(get_db)):
 # ── Documents ─────────────────────────────────────────────────────────
 
 
-@router.post("/documents", response_model=DocumentsResponse, status_code=201)
-def upload_documents(
-    files: list[UploadFile] = File(...),
+@router.post("/documents", response_model=DocumentExtractionResponse, status_code=201)
+async def upload_document(
+    file: UploadFile = File(...),
+    profile: str = Form(...),
     user=Depends(get_current_user),
     db=Depends(get_db),
 ):
-    return document_service.upload_documents(db, user["company_id"], files)
+    return await document_service.extract_document(
+        db, user["company_id"], file, profile
+    )
 
 
 # ── Emissions ─────────────────────────────────────────────────────────
@@ -150,7 +182,11 @@ def get_forecasts(
 async def get_recommendation(
     run_id: str, user=Depends(get_current_user), db=Depends(get_db)
 ):
-    run_resp = run_service.get_run(db, user["company_id"], run_id)
+    # Load before StreamingResponse so a missing run can still be a 404.
+    try:
+        run_resp = run_service.get_run(db, user["company_id"], run_id)
+    except ValueError as exc:
+        raise HTTPException(status_code=404, detail=str(exc)) from exc
     return StreamingResponse(
         recommendation_service.stream_recommendation(run_resp.run),
         media_type="text/event-stream",

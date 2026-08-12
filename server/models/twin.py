@@ -8,12 +8,15 @@ def _serialize(doc: dict) -> dict:
     return doc
 
 
-def create_twin_model(db, company_id: str, file_id: str, parts: list[dict]) -> dict:
+def create_twin_model(
+    db, company_id: str, file_id: str, gridfs_id: str, parts: list[dict]
+) -> dict:
     now = datetime.now(timezone.utc).isoformat()
     doc = {
         "_id": f"twin_{ObjectId()}",
         "company_id": company_id,
         "file_id": file_id,
+        "gridfs_id": gridfs_id,
         "nodes": [],
         "created_at": now,
         "updated_at": now,
@@ -35,3 +38,28 @@ def upsert_twin_nodes(db, company_id: str, nodes: list[dict]) -> dict | None:
         upsert=True,
     )
     return find_twin_by_company(db, company_id)
+
+
+def add_twin_node(db, company_id: str, node: dict) -> dict | None:
+    now = datetime.now(timezone.utc).isoformat()
+    db.twin_models.update_one(
+        {"company_id": company_id},
+        {"$push": {"nodes": node}, "$set": {"updated_at": now}},
+    )
+    return find_twin_by_company(db, company_id)
+
+
+def remove_twin_node(db, company_id: str, node_id: str) -> dict | None:
+    now = datetime.now(timezone.utc).isoformat()
+    db.twin_models.update_one(
+        {"company_id": company_id},
+        {"$pull": {"nodes": {"node_id": node_id}}, "$set": {"updated_at": now}},
+    )
+    return find_twin_by_company(db, company_id)
+
+
+def get_gridfs_file(db, gridfs_id: str):
+    import gridfs
+
+    fs = gridfs.GridFS(db)
+    return fs.get(ObjectId(gridfs_id))

@@ -1,0 +1,244 @@
+from unittest.mock import MagicMock
+
+import pytest
+from bson import ObjectId
+
+from server.models.twin import create_twin_model
+from server.schemas import TwinNode
+from server.services import twin_service
+
+
+def _seed_twin(mock_db, company_id="company_123"):
+    return create_twin_model(mock_db, company_id, "plant.glb", "gridfs_abc", [])
+
+
+def _node(node_id="node_1", process_type="ORE_STOCKPILE"):
+    return {
+        "node_id": node_id,
+        "label": f"Label {node_id}",
+        "mesh_ref": f"mesh_{node_id}",
+        "process_type": process_type,
+    }
+
+
+def test_add_node_service(mock_db):
+    _seed_twin(mock_db)
+    req = TwinNode(**_node())
+
+    result = twin_service.add_node(mock_db, "company_123", req)
+
+    assert result.twin_model_id.startswith("twin_")
+    assert len(result.nodes) == 1
+    assert result.nodes[0].node_id == "node_1"
+    assert result.nodes[0].process_type == "ORE_STOCKPILE"
+
+
+def test_add_node_duplicate_raises(mock_db):
+    _seed_twin(mock_db)
+    req = TwinNode(**_node())
+    twin_service.add_node(mock_db, "company_123", req)
+
+    with pytest.raises(ValueError, match="already exists"):
+        twin_service.add_node(mock_db, "company_123", req)
+
+
+def test_remove_node_service(mock_db):
+    _seed_twin(mock_db)
+    twin_service.add_node(mock_db, "company_123", TwinNode(**_node("node_1")))
+    twin_service.add_node(mock_db, "company_123", TwinNode(**_node("node_2")))
+
+    result = twin_service.remove_node(mock_db, "company_123", "node_1")
+
+    assert len(result.nodes) == 1
+    assert result.nodes[0].node_id == "node_2"
+
+
+def test_remove_node_missing_raises(mock_db):
+    _seed_twin(mock_db)
+
+    with pytest.raises(ValueError, match="not found"):
+        twin_service.remove_node(mock_db, "company_123", "missing")
+
+
+def test_get_gaps_unbound_and_orphan(mock_db):
+    _seed_twin(mock_db)
+    twin_service.add_node(
+        mock_db, "company_123", TwinNode(**_node("node_1", "ORE_STOCKPILE"))
+    )
+    mock_db.documents.insert_one(
+        {
+            "_id": "doc_1",
+            "company_id": "company_123",
+            "extraction": {
+                "status": "processed",
+                "candidates": [
+                    {
+                        "field_name": "dryer_thermal_efficiency",
+                        "owning_process_type": "ROTARY_DRYER",
+                        "value": 0.8,
+                        "confidence": 0.9,
+                    }
+                ],
+            },
+        }
+    )
+
+    gaps = twin_service.get_gaps(mock_db, "company_123")
+
+    assert gaps.unbound_required_process_types == ["ROTARY_DRYER"]
+    assert len(gaps.orphan_fields) == 1
+    assert gaps.orphan_fields[0].field_name == "dryer_thermal_efficiency"
+    assert gaps.orphan_fields[0].document_id == "doc_1"
+    assert gaps.ambiguous_fields == []
+
+
+def test_get_gaps_ambiguous(mock_db):
+    _seed_twin(mock_db)
+    twin_service.add_node(
+        mock_db, "company_123", TwinNode(**_node("node_k1", "ROTARY_KILN"))
+    )
+    twin_service.add_node(
+        mock_db, "company_123", TwinNode(**_node("node_k2", "ROTARY_KILN"))
+    )
+    mock_db.documents.insert_one(
+        {
+            "_id": "doc_1",
+            "company_id": "company_123",
+            "extraction": {
+                "status": "processed",
+                "candidates": [
+                    {
+                        "field_name": "reductant_biocoke_pct",
+                        "owning_process_type": "ROTARY_KILN",
+                        "value": 0.3,
+                        "confidence": 0.9,
+                    }
+                ],
+            },
+        }
+    )
+
+    gaps = twin_service.get_gaps(mock_db, "company_123")
+
+    assert gaps.unbound_required_process_types == []
+    assert gaps.orphan_fields == []
+    assert len(gaps.ambiguous_fields) == 1
+    assert set(gaps.ambiguous_fields[0].candidate_node_ids) == {"node_k1", "node_k2"}
+
+
+def test_post_twin_nodes(client, auth_headers, mock_db):
+    # company_id comes from JWT after register; seed twin for that company
+    from server.models.user import find_user_by_email
+
+    user = find_user_by_email(mock_db, "user@example.com")
+    create_twin_model(mock_db, user["company_id"], "plant.glb", "gridfs_1", [])
+
+    response = client.post(
+        "/twin/nodes",
+        headers=auth_headers,
+        json=_node("node_ore_1", "ORE_STOCKPILE"),
+    )
+
+    assert response.status_code == 201
+    body = response.json()
+    assert body["twin_model_id"].startswith("twin_")
+    assert body["nodes"][0]["node_id"] == "node_ore_1"
+    assert body["nodes"][0]["process_type"] == "ORE_STOCKPILE"
+
+
+def test_delete_twin_nodes(client, auth_headers, mock_db):
+    from server.models.user import find_user_by_email
+
+    user = find_user_by_email(mock_db, "user@example.com")
+    create_twin_model(mock_db, user["company_id"], "plant.glb", "gridfs_1", [])
+    client.post(
+        "/twin/nodes",
+        headers=auth_headers,
+        json=_node("node_1", "EAF"),
+    )
+
+    response = client.delete("/twin/nodes/node_1", headers=auth_headers)
+
+    assert response.status_code == 200
+    assert response.json()["nodes"] == []
+
+
+def test_upload_twin_model_persists_to_gridfs(client, auth_headers, mock_db, monkeypatch):
+    fake_oid = ObjectId()
+    fake_fs = MagicMock()
+    fake_fs.put.return_value = fake_oid
+    monkeypatch.setattr("router.gridfs.GridFS", lambda db: fake_fs)
+
+    response = client.post(
+        "/twin/model",
+        headers=auth_headers,
+        files={"file": ("plant.glb", b"glb-bytes-here", "model/gltf-binary")},
+    )
+
+    assert response.status_code == 201
+    body = response.json()
+    assert body["twin_model"]["file_id"] == "plant.glb"
+    assert body["twin_model"]["id"].startswith("twin_")
+    fake_fs.put.assert_called_once()
+    assert fake_fs.put.call_args.args[0] == b"glb-bytes-here"
+
+    from server.models.user import find_user_by_email
+
+    user = find_user_by_email(mock_db, "user@example.com")
+    twin = mock_db.twin_models.find_one({"company_id": user["company_id"]})
+    assert twin["gridfs_id"] == str(fake_oid)
+
+
+def test_commit_run_blocked_by_gaps(
+    client, auth_headers, mock_db, sample_emission_request
+):
+    from server.models.user import find_user_by_email
+
+    user = find_user_by_email(mock_db, "user@example.com")
+    create_twin_model(mock_db, user["company_id"], "plant.glb", "gridfs_1", [])
+    mock_db.documents.insert_one(
+        {
+            "_id": "doc_gap",
+            "company_id": user["company_id"],
+            "extraction": {
+                "status": "processed",
+                "candidates": [
+                    {
+                        "field_name": "energy",
+                        "owning_process_type": "CAPTIVE_POWER",
+                        "value": 100,
+                        "confidence": 0.9,
+                    }
+                ],
+            },
+        }
+    )
+
+    response = client.post(
+        "/runs",
+        headers=auth_headers,
+        json={"input_snapshot": sample_emission_request},
+    )
+
+    assert response.status_code == 422
+    detail = response.json()["detail"]
+    assert "CAPTIVE_POWER" in detail["unbound_required_process_types"]
+    assert detail["orphan_fields"][0]["field_name"] == "energy"
+
+
+def test_commit_run_succeeds_without_gaps(
+    client, auth_headers, mock_db, sample_emission_request
+):
+    from server.models.user import find_user_by_email
+
+    user = find_user_by_email(mock_db, "user@example.com")
+    create_twin_model(mock_db, user["company_id"], "plant.glb", "gridfs_1", [])
+
+    response = client.post(
+        "/runs",
+        headers=auth_headers,
+        json={"input_snapshot": sample_emission_request},
+    )
+
+    assert response.status_code == 201
+    assert "run" in response.json()

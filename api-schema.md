@@ -197,34 +197,37 @@ Request/response parameter documentation for each endpoint per RFC 001 & RFC 002
 ## 4. Documents (`/documents`)
 
 > All requests require header `Authorization: Bearer <jwt>`
+>
+> Helpy Document Vision + Elice Sol interpret. Returns **candidates for review only**
+> — nothing is written to company/run values until the user accepts in the UI.
+> Requires `ELICE_API_KEY`, `ELICE_BASE_URL`, `HELPY_BASE_URL`.
 
-### `POST /documents` — Upload documents
+### `POST /documents` — Extract candidates from one document
 
 **Request:** `multipart/form-data`
 
 |Param|Type|Description|
 |-|-|-|
-|`files[]`|file(s)|required, PDF/image/XLSX|
+|`file`|file|required, PDF/PNG/JPEG/WEBP/PPTX, max 20 MB|
+|`profile`|string|required, `site_spec` or `operational`|
 
 **Response `201`:**
 
 ```json
 {
-  "documents": [
-    { "document_id": "doc_123", "status": "processed" }
-  ],
   "candidates": [
     {
-      "candidate_id": "cand_123",
-      "field_name": "wet_ore_input_tons",
+      "field": "wet_ore_input_tons",
       "value": 42000.0,
       "confidence": 0.93,
-      "owning_process_type": "ORE_STOCKPILE",
-      "routing_status": "routed",
-      "target_node_id": "node_ore_1",
-      "accepted": false
+      "node": "stockpile",
+      "sourceHint": "",
+      "basis": "transcribed",
+      "evidence": "Bijih basah 42.000 ton",
+      "derivation": ""
     }
-  ]
+  ],
+  "confidenceIsPlaceholder": true
 }
 ```
 
@@ -234,6 +237,12 @@ Request/response parameter documentation for each endpoint per RFC 001 & RFC 002
 
 > All requests require header `Authorization: Bearer <jwt>`
 > This route is stateless — no database writes.
+>
+> Uses the RKEF mass/energy calculator in `server/emissions/` (Scope 1 dryer/kiln/reductant, Scope 2 EAF).
+> Fractions must be in `[0, 1]` (e.g. `0.32` for 32% moisture). `power_mix_hydro_grid` is accepted for
+> API compatibility but does not enter the arithmetic (hydro is zero-emission).
+> On `POST /runs`, company `site_spec.kiln_thermal_efficiency` and `site_spec.alloy_nickel_grade`
+> override default process constants when present.
 
 ### `POST /emissions` — Calculate emissions
 
@@ -336,34 +345,91 @@ Request/response parameter documentation for each endpoint per RFC 001 & RFC 002
 |-|-|-|
 |`horizon_days`|int|required, 7–30, default 14|
 
+_Shape matches RFC-006-Nickel-Forecasting-FINAL-v2.md §5 (nickel) and RFC-006-price-forecasting(carbon-only).md §3.2 (carbon)._
+
 **Response `200`:**
 
 ```json
 {
+  "generated_at": "2026-08-11T04:00:00+00:00",
   "horizon_days": 14,
-  "nickel_forecast": {
-    "currency": "USD",
+  "nickel": {
+    "series_id": "nickel_cash_settlement_usd",
+    "available": true,
+    "currency_unit": "usd_per_ton",
+    "interval_level": 0.8,
     "points": [
       {
-        "date": "2026-08-05",
+        "date": "2026-08-11",
         "price_usd_per_ton": 15400.0,
         "lower_usd_per_ton": 14900.0,
-        "upper_usd_per_ton": 15900.0
+        "upper_usd_per_ton": 15900.0,
+        "provenance": { "bucket": "short", "model_id": "nickel_stub_v0", "cache_status": "miss" }
       }
     ],
-    "stale": false
+    "summary": {
+      "mean_usd_per_ton": 15400.0,
+      "horizon_end_usd_per_ton": 15400.0,
+      "trend": "flat",
+      "trend_confidence": 0.0,
+      "change_pct": 0.0
+    },
+    "history": {
+      "window": ["2026-08-11", "2026-08-11"],
+      "last_observed_price_usd_per_ton": 15400.0,
+      "last_observed_date": "2026-08-11"
+    },
+    "model": {
+      "bucket_models": [{ "bucket": "short", "model_class": "stub", "trained_at": "2026-08-11T04:00:00+00:00" }],
+      "dataset_version": "stub",
+      "feature_set_version": "stub",
+      "ruleset_version": "stub_v0"
+    },
+    "staleness": { "is_stale": false, "as_of": "2026-08-11T04:00:00+00:00", "age_hours": 0.0 },
+    "disclosures": []
   },
-  "carbon_forecast": {
-    "currency": "IDR",
+  "carbon": {
+    "series_id": "idx_carbon_regular",
+    "available": true,
+    "currency_unit": "idr_per_ton",
+    "interval_level": 0.8,
     "points": [
-      {
-        "date": "2026-08-05",
-        "limit_price_idr": 42000.0,
-        "lower_limit_price_idr": 39000.0,
-        "upper_limit_price_idr": 46000.0
-      }
+      { "date": "2026-08-11", "price_idr_per_ton": 42000.0, "lower_idr_per_ton": 39000.0, "upper_idr_per_ton": 46000.0 }
     ],
-    "stale": false
+    "summary": {
+      "mean_idr_per_ton": 42000.0,
+      "horizon_end_idr_per_ton": 42000.0,
+      "last_observed_month": "2026-08",
+      "last_observed_vwap_idr_per_ton": 42000.0,
+      "trend": "flat",
+      "trend_confidence": 0.0,
+      "change_pct": 0.0
+    },
+    "monthly_anchors": [
+      { "month": "2026-08", "vwap_idr_per_ton": 42000.0, "volume_tco2e": 0.0, "value_idr": 0.0, "transaction_count": 0 }
+    ],
+    "market_depth": {
+      "window": ["2026-08", "2026-08"],
+      "median_monthly_volume_tco2e": 0.0,
+      "max_monthly_volume_tco2e": 0.0,
+      "trailing_12m_volume_tco2e": 0.0
+    },
+    "model": {
+      "model_id": "carbon_stub_v0",
+      "model_class": "stub",
+      "prophet_version": "n/a",
+      "trained_at": "2026-08-11T04:00:00+00:00",
+      "training_data": "stub",
+      "generator_seed": 0,
+      "generator_series_sha256": "",
+      "artefact_sha256": "",
+      "band_source": "stub",
+      "band_sigma_monthly_log": 0.0
+    },
+    "staleness": { "is_stale": false, "as_of": "2026-08-11T04:00:00+00:00", "age_hours": 0.0 },
+    "disclosures": [
+      "Carbon path is a synthetic daily series anchored to published IDX monthly aggregates."
+    ]
   }
 }
 ```
