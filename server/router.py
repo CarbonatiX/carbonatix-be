@@ -47,12 +47,19 @@ def health():
 
 @router.post("/auth/register", response_model=AuthResponse, status_code=201)
 def register(req: RegisterRequest, db=Depends(get_db)):
-    return auth_service.register(db, req)
+    try:
+        return auth_service.register(db, req)
+    except ValueError as exc:
+        status = 409 if "already registered" in str(exc) else 400
+        raise HTTPException(status_code=status, detail=str(exc)) from exc
 
 
 @router.post("/auth/login", response_model=AuthResponse)
 def login(req: LoginRequest, db=Depends(get_db)):
-    return auth_service.login(db, req)
+    try:
+        return auth_service.login(db, req)
+    except ValueError as exc:
+        raise HTTPException(status_code=401, detail=str(exc)) from exc
 
 
 # ── Company ───────────────────────────────────────────────────────────
