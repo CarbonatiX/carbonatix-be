@@ -128,21 +128,37 @@ pytest
 | Twin | `/twin/model`, `/twin/nodes`, `/twin/gaps` | Bundled nodes auto-seeded for form path |
 | Documents | `POST /documents` | OCR when Helpy/Elice configured |
 | Emissions | `POST /emissions` | Stateless RKEF calculator |
-| Runs | `POST /runs`, `GET /runs/{id}` | Immutable snapshot + forecast stub |
-| Forecasts | `GET /forecasts` | Stub Ni + carbon series (disclosed synthetic) |
+| Runs | `POST /runs`, `GET /runs/{id}` | Immutable snapshot; prices from Mongo forecasts when seeded |
+| Forecasts | `GET /forecasts` | Seeded ML Ni + carbon series (`data/forecasts_mvp.json`); stubs only if Mongo empty |
 | Advisor | `GET /runs/{id}/recommendation` | SSE; requires Elice |
 
-Stub market figures used for compliance valuation and advisor routes (see `server/pricing.py`): carbon **42,000 IDR/t**, nickel **15,400 USD/t**, carbon tax **30,000 IDR/t**.
+Stub / fallback market figures (see `server/pricing.py`, used only when forecasts collection is empty): carbon **≈59,102 IDR/t**, nickel **16,915 USD/t**, carbon tax **30,000 IDR/t**.
+
+### Forecast fixture
+
+On API startup, `seed_forecasts` upserts [`data/forecasts_mvp.json`](data/forecasts_mvp.json) into Mongo when the `forecasts` collection is empty (or when `FORCE_FORECAST_SEED=1`).
+
+Rebuild the fixture from sibling `carbonatix-ml` artifacts (needs ML `.venv` with prophet):
+
+```bash
+# from carbonatix-ml
+.venv\Scripts\python.exe ..\carbonatix-be\server\scripts\build_forecasts_fixture.py
+```
+
+Sources: nickel prototype `forecasts["30"]`, carbon `artifacts/carbon_prophet_20260810.pkl` → `predict(30)`.
 
 ## Project layout
 
 ```
-carbonatix-be/
+├── data/
+│   └── forecasts_mvp.json  # Packaged GET /forecasts envelope (seeded to Mongo)
 ├── server/                 # FastAPI app
 │   ├── main.py             # Entry + lifespan (indexes + seed)
 │   ├── config.py           # Settings from server/.env
 │   ├── .env.example        # Template (copy to .env)
 │   ├── router.py           # HTTP routes
+│   ├── seed.py             # Demo user + forecast fixture seed
+│   ├── scripts/            # One-shot builders (e.g. forecasts fixture)
 │   ├── emissions/          # Calculator + compliance
 │   ├── advisor/            # Corpus, prompt, SSE pipeline
 │   ├── ingestion/          # Document vision / mapping

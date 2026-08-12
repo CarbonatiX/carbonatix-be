@@ -233,5 +233,5 @@ def test_commit_run_succeeds_without_gaps(
 
     assert response.status_code == 201
     assert "run" in response.json()
-    assert response.json()["run"]["forecast_snapshot"]["carbon"]["limit_price_idr"] == 42000.0
+    assert response.json()["run"]["forecast_snapshot"]["carbon"]["limit_price_idr"] == 59102.0
     assert response.json()["run"]["forecast_snapshot"]["carbon"]["tax_rate_idr"] == 30000.0

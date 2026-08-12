@@ -13,6 +13,8 @@ if str(ROOT_DIR) not in sys.path:
 os.environ.setdefault("MONGODB_URI", "mongodb://localhost:27017")
 os.environ.setdefault("MONGODB_DB_NAME", "carbonatix_test")
 os.environ.setdefault("JWT_SECRET_KEY", "test-jwt-secret-key-for-ci-only-32b")
+# Lifespan still runs under TestClient; keep forecast seeding explicit in unit tests.
+os.environ["SKIP_FORECAST_SEED"] = "1"
 
 TEST_PASSWORD = "Secure1!"
 

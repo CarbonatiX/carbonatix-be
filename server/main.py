@@ -32,9 +32,10 @@ async def lifespan(app: FastAPI):
     db = get_db()
     if db is not None:
         _ensure_indexes(db)
-        from seed import seed_database
+        from seed import seed_database, seed_forecasts
 
         seed_database(db)
+        seed_forecasts(db)
     yield
 
 

@@ -3,16 +3,20 @@
 Compliance valuation, forecast stubs, run snapshots, and the advisor must
 all quote the same carbon/nickel prices. Disclosed as stub/synthetic on the
 UI — not live exchange data.
+
+When Mongo is seeded from data/forecasts_mvp.json these values are fallbacks
+only (empty forecasts collection). Aligned to ML last-observed:
+nickel 16915 USD/t (LME prototype), carbon ~59102 IDR/t (IDX monthly VWAP).
 """
 
-# Last-observed-style stub (aligned with forecast_service / IDX demo anchor).
-STUB_CARBON_PRICE_IDR = 42_000.0
-STUB_CARBON_LOWER_IDR = 39_000.0
-STUB_CARBON_UPPER_IDR = 46_000.0
+# Last-observed-style stub (aligned with ML fixture last-observed).
+STUB_CARBON_PRICE_IDR = 59_102.0
+STUB_CARBON_LOWER_IDR = 54_969.0
+STUB_CARBON_UPPER_IDR = 63_108.0
 
-STUB_NICKEL_PRICE_USD = 15_400.0
-STUB_NICKEL_LOWER_USD = 14_900.0
-STUB_NICKEL_UPPER_USD = 15_900.0
+STUB_NICKEL_PRICE_USD = 16_915.0
+STUB_NICKEL_LOWER_USD = 16_648.0
+STUB_NICKEL_UPPER_USD = 17_187.0
 
 # Domestic carbon tax rate used for deficit route comparison (PRD §11).
 CARBON_TAX_RATE_IDR = 30_000.0

@@ -1,4 +1,4 @@
-from datetime import datetime, timedelta, timezone
+from datetime import date, datetime, timedelta, timezone
 
 from models import get_latest_forecast
 from pricing import (
@@ -160,11 +160,56 @@ def _build_carbon(*, dates: list[str], generated_at: str) -> CarbonForecast:
     )
 
 
+def _slice_points_by_horizon(points: list, horizon_days: int) -> list:
+    if not points or horizon_days <= 0:
+        return []
+    start = date.fromisoformat(str(points[0].date))
+    cutoff = start + timedelta(days=horizon_days - 1)
+    return [p for p in points if date.fromisoformat(str(p.date)) <= cutoff]
+
+
+def _slice_cached_forecast(cached: ForecastsResponse, horizon_days: int) -> ForecastsResponse:
+    if horizon_days >= cached.horizon_days:
+        return cached
+
+    nickel = cached.nickel
+    carbon = cached.carbon
+    ni_points = _slice_points_by_horizon(nickel.points, horizon_days)
+    ca_points = _slice_points_by_horizon(carbon.points, horizon_days)
+
+    ni_summary = nickel.summary
+    if ni_points and nickel.summary is not None:
+        prices = [p.price_usd_per_ton for p in ni_points]
+        ni_summary = nickel.summary.model_copy(
+            update={
+                "mean_usd_per_ton": sum(prices) / len(prices),
+                "horizon_end_usd_per_ton": prices[-1],
+            }
+        )
+
+    ca_summary = carbon.summary
+    if ca_points and carbon.summary is not None:
+        prices = [p.price_idr_per_ton for p in ca_points]
+        ca_summary = carbon.summary.model_copy(
+            update={
+                "mean_idr_per_ton": sum(prices) / len(prices),
+                "horizon_end_idr_per_ton": prices[-1],
+            }
+        )
+
+    return ForecastsResponse(
+        generated_at=cached.generated_at,
+        horizon_days=horizon_days,
+        nickel=nickel.model_copy(update={"points": ni_points, "summary": ni_summary}),
+        carbon=carbon.model_copy(update={"points": ca_points, "summary": ca_summary}),
+    )
+
+
 def get_forecasts(db, horizon_days: int = 14) -> ForecastsResponse:
     cached = get_latest_forecast(db)
     if cached:
         payload = {k: v for k, v in cached.items() if k not in ("_id", "updated_at")}
-        return ForecastsResponse(**payload)
+        return _slice_cached_forecast(ForecastsResponse(**payload), horizon_days)
 
     generated_at = datetime.now(timezone.utc).isoformat()
     today = datetime.now(timezone.utc).date()
