@@ -4,10 +4,9 @@ import asyncio
 
 import pytest
 
-from advisor.pipeline import run_pipeline
-from emissions.calculator import calculate_emissions
-from emissions.compliance import assess
-
+from server.advisor.pipeline import run_pipeline
+from server.emissions.calculator import calculate_emissions
+from server.emissions.compliance import assess
 
 NOMINAL = {
     "wet_ore_input_tons": 10_000.0,
@@ -90,7 +89,7 @@ def result_and_position():
 
 
 def test_pipeline_emits_four_stages(monkeypatch, result_and_position):
-    from advisor import pipeline
+    from server.advisor import pipeline
 
     captured = _Captured()
     r, pos = result_and_position
@@ -114,7 +113,7 @@ def test_pipeline_emits_four_stages(monkeypatch, result_and_position):
 
 
 def test_missing_elice_env_fails_synthesise(monkeypatch, result_and_position):
-    from advisor import pipeline
+    from server.advisor import pipeline
 
     monkeypatch.delenv("ELICE_API_KEY", raising=False)
     monkeypatch.delenv("ELICE_BASE_URL", raising=False)
@@ -128,14 +127,14 @@ def test_missing_elice_env_fails_synthesise(monkeypatch, result_and_position):
 
 
 def test_corpus_has_verified_clauses():
-    from advisor.corpus import CORPUS, has_placeholder_text
+    from server.advisor.corpus import CORPUS, has_placeholder_text
 
     assert len(CORPUS) >= 5
     assert has_placeholder_text() is False
 
 
 def test_deficit_route_prefers_tax_when_credit_above_tax():
-    from advisor.routes import build_route_comparison
+    from server.advisor.routes import build_route_comparison
 
     routes = build_route_comparison(
         deficit_tco2e=1000.0,
@@ -152,7 +151,7 @@ def test_deficit_route_prefers_tax_when_credit_above_tax():
 
 
 def test_deficit_route_prefers_buy_when_credit_below_tax():
-    from advisor.routes import build_route_comparison
+    from server.advisor.routes import build_route_comparison
 
     routes = build_route_comparison(
         deficit_tco2e=1000.0,
@@ -166,11 +165,11 @@ def test_deficit_route_prefers_buy_when_credit_below_tax():
 
 
 def test_invented_numeral_flags_verify(monkeypatch, result_and_position):
-    from advisor import pipeline
+    from server.advisor import pipeline
 
     r, pos = result_and_position
     # Force deficit so route figures are assembled.
-    from emissions.compliance import assess
+    from server.emissions.compliance import assess
 
     pos = assess(r, cap_tco2e=max(0.0, r.total_emissions - 5000), carbon_price_idr_per_ton=42000.0)
     monkeypatch.setenv("ELICE_API_KEY", "test-key")

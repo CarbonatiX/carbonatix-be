@@ -1,8 +1,8 @@
 from dataclasses import replace
 
-from emissions.calculator import calculate_emissions as _calculate
-from emissions.constants import DEFAULT_CONSTANTS, ProcessConstants
-from schemas import EmissionRequest, EmissionResponse, EmissionResult
+from server.emissions.calculator import calculate_emissions as _calculate
+from server.emissions.constants import DEFAULT_CONSTANTS, ProcessConstants
+from server.schemas import EmissionRequest, EmissionResponse, EmissionResult
 
 
 def constants_from_site_spec(site_spec: dict | None) -> ProcessConstants:

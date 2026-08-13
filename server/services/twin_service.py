@@ -1,6 +1,6 @@
 from collections import Counter
 
-from models import (
+from server.models import (
     add_twin_node,
     create_twin_model,
     find_twin_by_company,
@@ -8,7 +8,7 @@ from models import (
     remove_twin_node,
     upsert_twin_nodes,
 )
-from schemas import (
+from server.schemas import (
     AmbiguousField,
     OrphanField,
     TwinGapsResponse,
@@ -19,7 +19,7 @@ from schemas import (
     TwinNodesUpdate,
     TwinPart,
 )
-from services.bundled_twin import REQUIRED_PROCESS_TYPES
+from server.services.bundled_twin import REQUIRED_PROCESS_TYPES
 
 
 def upload_model(

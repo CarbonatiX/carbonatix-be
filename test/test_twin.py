@@ -165,7 +165,7 @@ def test_upload_twin_model_persists_to_gridfs(client, auth_headers, mock_db, mon
     fake_oid = ObjectId()
     fake_fs = MagicMock()
     fake_fs.put.return_value = fake_oid
-    monkeypatch.setattr("router.gridfs.GridFS", lambda db: fake_fs)
+    monkeypatch.setattr("server.router.gridfs.GridFS", lambda db: fake_fs)
 
     response = client.post(
         "/twin/model",

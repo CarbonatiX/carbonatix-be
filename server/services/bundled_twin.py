@@ -4,7 +4,7 @@ The FE form path never calls /twin/nodes. Without these nodes, get_gaps reports
 all required process types as unbound and POST /runs returns 422.
 """
 
-from models import create_twin_model, find_twin_by_company, upsert_twin_nodes
+from server.models import create_twin_model, find_twin_by_company, upsert_twin_nodes
 
 REQUIRED_PROCESS_TYPES: tuple[str, ...] = (
     "ORE_STOCKPILE",

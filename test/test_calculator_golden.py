@@ -2,9 +2,9 @@
 
 import pytest
 
-from emissions.calculator import calculate_emissions
-from emissions.compliance import assess
-from emissions.constants import DEFAULT_CONSTANTS as C
+from server.emissions.calculator import calculate_emissions
+from server.emissions.compliance import assess
+from server.emissions.constants import DEFAULT_CONSTANTS as C
 
 NOMINAL = {
     "wet_ore_input_tons": 10_000.0,

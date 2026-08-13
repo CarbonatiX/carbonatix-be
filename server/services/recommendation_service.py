@@ -5,12 +5,12 @@ from __future__ import annotations
 import json
 from collections.abc import AsyncIterator
 
-from advisor.pipeline import run_pipeline
-from ai_env import ensure_ai_env, require_advisor_config
-from emissions.calculator import EmissionResult
-from emissions.compliance import CompliancePosition
-from models import create_recommendation
-from schemas import RunDetail
+from server.advisor.pipeline import run_pipeline
+from server.ai_env import ensure_ai_env, require_advisor_config
+from server.emissions.calculator import EmissionResult
+from server.emissions.compliance import CompliancePosition
+from server.models import create_recommendation
+from server.schemas import RunDetail
 
 
 def _result_from_run(emission: dict) -> EmissionResult:

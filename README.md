@@ -6,20 +6,13 @@ The product UI lives in the sibling repo **`carbonatix-fe`** (Next.js), not in t
 
 ## Prerequisites
 
-- **Python 3.12+** (CI targets 3.12; 3.13/3.14 usually work)
-- **MongoDB** (local install or Docker)
-- Optional: **Docker** / Docker Compose (Mongo only is enough for local API work)
+- **Docker** / Docker Compose — the only requirement for the quick start below; it brings its own Mongo
+- **Python 3.12+** — only for the hot-reload dev loop (CI targets 3.12; 3.13/3.14 usually work)
 - Optional: **Elice** + **Helpy** credentials for advisor SSE and document OCR
 
 ## Quick start
 
-### 1. Clone and enter the repo
-
-```bash
-cd carbonatix-be
-```
-
-### 2. Environment
+### 1. Environment
 
 ```bash
 cp server/.env.example server/.env
@@ -29,7 +22,7 @@ Edit `server/.env`:
 
 | Variable | Required | Purpose |
 |----------|----------|---------|
-| `MONGODB_URI` | Yes | Mongo connection string |
+| `MONGODB_URI` | Yes | Mongo connection string (Compose overrides this for the API container — see step 2) |
 | `MONGODB_DB_NAME` | Yes | Database name |
 | `JWT_SECRET_KEY` | Yes | Long random string for JWT signing |
 | `ELICE_API_KEY` | No* | Advisor + document interpret |
@@ -39,50 +32,17 @@ Edit `server/.env`:
 
 \*Without Elice/Helpy, register → emissions → commit run still works; recommendation SSE and document OCR fail cleanly.
 
-### 3. Start MongoDB
-
-Preferred (Compose database service only — the `frontend` Compose service is a legacy Streamlit image and is not the MVP UI):
+### 2. Run it
 
 ```bash
-docker compose up -d database
+docker compose up -d
 ```
 
-Point `MONGODB_URI` at `mongodb://localhost:27017` (or your Atlas / remote URI).
+That's the whole setup — Mongo and the API, with the API waiting on Mongo's healthcheck before it starts. The container always talks to the bundled Mongo service (Compose overrides `MONGODB_URI` to `mongodb://database:27017`, so the same `server/.env` works for both this and the local path below). To point the container at Atlas or another remote instead, comment out that `environment:` line in `compose.yaml`.
 
-### 4. Install and run the API
+The legacy Streamlit `frontend` service is behind a Compose profile and is *not* started here — the MVP UI is the sibling `carbonatix-fe` repo.
 
-From the **repo root** (`carbonatix-be`):
-
-```bash
-python -m venv .venv
-# Windows:
-.venv\Scripts\activate
-# macOS/Linux:
-# source .venv/bin/activate
-
-pip install -r requirements.txt
-```
-
-Run Uvicorn with `server` on `PYTHONPATH` (matches how tests resolve imports):
-
-```bash
-# Windows PowerShell
-$env:PYTHONPATH = ".;server"
-uvicorn server.main:app --reload --port 8000
-
-# macOS/Linux
-export PYTHONPATH=".:server"
-uvicorn server.main:app --reload --port 8000
-```
-
-Equivalent alternative — run from the `server` package directory:
-
-```bash
-cd server
-uvicorn main:app --reload --port 8000
-```
-
-### 5. Verify
+### 3. Verify
 
 | Check | URL / command |
 |-------|----------------|
@@ -95,6 +55,28 @@ On first start with an empty DB, [server/seed.py](server/seed.py) creates a demo
 - **Password:** `test123!`
 
 Registering a new user also seeds the five bundled twin process nodes so form-path `POST /runs` is not blocked.
+
+## Develop locally (hot reload)
+
+Run the API natively against the Compose Mongo, so edits reload without a rebuild:
+
+```bash
+python -m venv .venv
+.venv\Scripts\activate          # macOS/Linux: source .venv/bin/activate
+pip install -r requirements.txt
+
+docker compose up -d database   # Mongo only
+uvicorn server.main:app --reload --port 8000
+```
+
+Run everything from the **repo root** — `server` is a normal package, so no `PYTHONPATH` is needed. This path uses `MONGODB_URI` from `server/.env` as-is (`mongodb://localhost:27017` for the Compose Mongo, or your Atlas URI).
+
+Tests use mongomock and need no live Mongo:
+
+```bash
+pytest        # 55 tests
+ruff check .
+```
 
 ## Pair with the frontend
 
@@ -110,14 +92,6 @@ npm run dev
 Open the Next.js app (typically http://localhost:3000).
 
 **Demo / QA click-paths** for surplus, deficit, OCR-off, advisor-down, etc.: see [`../docs/USER_FLOWS_MVP.md`](../docs/USER_FLOWS_MVP.md).
-
-## Tests
-
-From `carbonatix-be` (uses mongomock; no live Mongo required):
-
-```bash
-pytest
-```
 
 ## API surface (MVP)
 
@@ -166,24 +140,18 @@ Sources: nickel prototype `forecasts["30"]`, carbon `artifacts/carbon_prophet_20
 │   └── services/           # Domain services
 ├── test/                   # pytest
 ├── mdns/                   # Optional LAN mDNS helper
-├── compose.yaml            # Mongo (+ legacy API/Streamlit images)
+├── compose.yaml            # Mongo + API (legacy Streamlit behind a profile)
 ├── Dockerfile              # API image
 └── requirements.txt
 ```
+
+Modules import each other by full package path (`from server.services import ...`), so the app resolves from the repo root with no `PYTHONPATH` or `sys.path` setup — in Docker, under Uvicorn, and under pytest alike.
 
 ## Advisor behaviour
 
 - Model default: **`gpt-5.6-sol`** via Elice (`ELICE_MODEL` overrides).
 - Missing Elice config → synthesise/assemble fails; emission and compliance panels must still stand (FE shows “rekomendasi tidak tersedia”).
 - Deficit runs include buy vs tax vs abate figures; with stub prices, **tax wins** (42k > 30k).
-
-## Optional: API in Docker
-
-```bash
-docker compose up -d database server
-```
-
-Ensure `server/.env` matches the Compose network (for the `server` service, Mongo host is often `database` rather than `localhost`). The Compose **`frontend`** service is legacy Streamlit — use `carbonatix-fe` instead.
 
 ## Optional: `carbonatix.local` (mDNS)
 
@@ -197,7 +165,9 @@ HOST_IP=<your-lan-ip> python publish.py
 
 ## Troubleshooting
 
-**Mongo connection refused** — confirm `docker compose ps database` (or local `mongod`) and that `MONGODB_URI` matches.
+**Mongo connection refused** — confirm `docker compose ps database` shows `healthy`, and that `MONGODB_URI` matches (`localhost` when running the API natively, `database` inside Compose).
+
+**API starts but the DB is empty** — `get_database()` returns `None` on connection failure and startup silently skips indexing and seeding. Check `docker compose logs server` for `Seeded admin:` / `Seeded forecasts from`; if absent, Mongo was unreachable at startup.
 
 **`POST /runs` 422 with gaps** — new accounts get bundled twin nodes automatically; orphan document process types that are not on the twin still block commit.
 

@@ -1,7 +1,11 @@
 """MVP happy-path: register → commit run with coherent prices (no live Elice)."""
 
-from pricing import CARBON_TAX_RATE_IDR, STUB_CARBON_PRICE_IDR, STUB_NICKEL_PRICE_USD
-from services.bundled_twin import REQUIRED_PROCESS_TYPES, ensure_bundled_twin
+from server.pricing import (
+    CARBON_TAX_RATE_IDR,
+    STUB_CARBON_PRICE_IDR,
+    STUB_NICKEL_PRICE_USD,
+)
+from server.services.bundled_twin import REQUIRED_PROCESS_TYPES, ensure_bundled_twin
 
 
 def test_register_seeds_bundled_twin(client, mock_db):

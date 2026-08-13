@@ -1,8 +1,9 @@
 import gridfs
-from deps import get_current_user, get_db
 from fastapi import APIRouter, Depends, File, Form, HTTPException, Query, UploadFile
 from fastapi.responses import StreamingResponse
-from schemas import (
+
+from server.deps import get_current_user, get_db
+from server.schemas import (
     AuthResponse,
     CompanyResponse,
     CompanyUpdate,
@@ -20,7 +21,7 @@ from schemas import (
     TwinNodesResponse,
     TwinNodesUpdate,
 )
-from services import (
+from server.services import (
     auth_service,
     company_service,
     document_service,

@@ -32,9 +32,10 @@ from typing import Any
 
 from openai import AsyncOpenAI
 
-from emissions.calculator import EmissionResult
-from emissions.compliance import CompliancePosition
-from pricing import ADVISOR_CONFIDENCE_THRESHOLD
+from server.emissions.calculator import EmissionResult
+from server.emissions.compliance import CompliancePosition
+from server.pricing import ADVISOR_CONFIDENCE_THRESHOLD
+
 from .corpus import has_placeholder_text, select_clauses
 from .prompt import build_prompt, unsupported_numerals
 from .routes import build_route_comparison

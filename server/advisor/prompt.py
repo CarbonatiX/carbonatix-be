@@ -9,8 +9,9 @@ verbatim clause injection (see `corpus.py`).
 
 import re
 
-from emissions.calculator import EmissionResult
-from emissions.compliance import CompliancePosition
+from server.emissions.calculator import EmissionResult
+from server.emissions.compliance import CompliancePosition
+
 from .corpus import PLACEHOLDER_SENTINEL, Clause, has_placeholder_text
 
 __all__ = ["build_prompt", "has_placeholder_text", "unsupported_numerals"]

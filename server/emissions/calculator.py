@@ -9,7 +9,7 @@ Biocoke reductant and hydro grid power are treated as zero-emission.
 import math
 from dataclasses import dataclass
 
-from emissions.constants import DEFAULT_CONSTANTS, ProcessConstants
+from server.emissions.constants import DEFAULT_CONSTANTS, ProcessConstants
 
 __all__ = ["EmissionResult", "calculate_emissions"]
 

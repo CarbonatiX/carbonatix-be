@@ -1,6 +1,6 @@
 """Pure verification helpers — no network."""
 
-from ingestion.verify import parse_id_number, verified_value
+from server.ingestion.verify import parse_id_number, verified_value
 
 
 class _Doc:

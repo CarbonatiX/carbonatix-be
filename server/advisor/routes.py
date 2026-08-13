@@ -5,7 +5,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 from typing import Any
 
-from pricing import CARBON_TAX_RATE_IDR
+from server.pricing import CARBON_TAX_RATE_IDR
 
 
 @dataclass(frozen=True)

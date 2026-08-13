@@ -1,14 +1,8 @@
 import os
-import sys
-from pathlib import Path
 
 import mongomock
 import pytest
 from fastapi.testclient import TestClient
-
-ROOT_DIR = Path(__file__).resolve().parents[1]
-if str(ROOT_DIR) not in sys.path:
-    sys.path.insert(0, str(ROOT_DIR))
 
 os.environ.setdefault("MONGODB_URI", "mongodb://localhost:27017")
 os.environ.setdefault("MONGODB_DB_NAME", "carbonatix_test")
@@ -29,9 +23,8 @@ def mock_db():
 
 @pytest.fixture
 def client(mock_db, monkeypatch):
-    from deps import get_db
-
     from server import main as main_module
+    from server.deps import get_db
 
     app = main_module.app
 

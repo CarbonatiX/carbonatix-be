@@ -30,18 +30,12 @@ jobs:
       - name: Run Ruff
         run: ruff check .
 
-      - name: Prepare test env
-        run: cp test/.env.example test/.env
-
       - name: Run Tests
-        env:
-          PYTHONPATH: .:server
         run: pytest -vv
 
-
   docker:
-    name: Build & Run
-    Backend needs: test
+    name: Build & Run Backend
+    needs: test
     runs-on: ubuntu-latest
     steps:
       - name: Checkout source

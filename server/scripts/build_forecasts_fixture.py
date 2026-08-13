@@ -17,7 +17,6 @@ from pathlib import Path
 
 BE_ROOT = Path(__file__).resolve().parents[2]
 ML_ROOT = BE_ROOT.parent / "carbonatix-ml"
-SERVER_DIR = BE_ROOT / "server"
 OUT_PATH = BE_ROOT / "data" / "forecasts_mvp.json"
 
 NICKEL_PROTOTYPE = (
@@ -114,8 +113,8 @@ def main() -> None:
         "carbon": carbon,
     }
 
-    sys.path.insert(0, str(SERVER_DIR))
-    from schemas import ForecastsResponse  # noqa: E402
+    sys.path.insert(0, str(BE_ROOT))
+    from server.schemas import ForecastsResponse
 
     validated = ForecastsResponse(**payload)
     OUT_PATH.parent.mkdir(parents=True, exist_ok=True)

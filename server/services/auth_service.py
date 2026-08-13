@@ -1,8 +1,8 @@
 import re
 
-from auth import check_password, create_token, hash_password
-from models import create_company, create_user, find_user_by_email
-from schemas import AuthResponse, LoginRequest, RegisterRequest, UserBrief
+from server.auth import check_password, create_token, hash_password
+from server.models import create_company, create_user, find_user_by_email
+from server.schemas import AuthResponse, LoginRequest, RegisterRequest, UserBrief
 
 
 def _validate_password(password: str) -> bool:
@@ -27,7 +27,7 @@ def register(db, req: RegisterRequest) -> AuthResponse:
     db.companies.update_one(
         {"_id": company["id"]}, {"$set": {"owner_user_id": user["id"]}}
     )
-    from services.bundled_twin import ensure_bundled_twin
+    from server.services.bundled_twin import ensure_bundled_twin
 
     ensure_bundled_twin(db, company["id"])
 

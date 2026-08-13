@@ -3,11 +3,11 @@
 import math
 from dataclasses import dataclass
 
-from emissions.calculator import EmissionResult
+from server.emissions.calculator import EmissionResult
 
 __all__ = ["CompliancePosition", "assess", "suggest_cap_from_baseline"]
 
-from pricing import STUB_CARBON_PRICE_IDR
+from server.pricing import STUB_CARBON_PRICE_IDR
 
 # Same stub used by forecast_service / advisor (disclosed as synthetic on UI).
 DEFAULT_CARBON_PRICE_IDR = STUB_CARBON_PRICE_IDR

@@ -76,7 +76,7 @@ def test_get_forecasts_endpoint(client, auth_headers):
 
 
 def test_seed_forecasts_upserts_mvp_fixture(mock_db, monkeypatch):
-    from seed import seed_forecasts
+    from server.seed import seed_forecasts
 
     monkeypatch.delenv("SKIP_FORECAST_SEED", raising=False)
     assert seed_forecasts(mock_db) is True
@@ -92,7 +92,7 @@ def test_seed_forecasts_upserts_mvp_fixture(mock_db, monkeypatch):
 
 
 def test_seed_forecasts_skips_when_present(mock_db, monkeypatch):
-    from seed import seed_forecasts
+    from server.seed import seed_forecasts
 
     monkeypatch.delenv("SKIP_FORECAST_SEED", raising=False)
     assert seed_forecasts(mock_db) is True
@@ -102,7 +102,7 @@ def test_seed_forecasts_skips_when_present(mock_db, monkeypatch):
 def test_cached_forecast_slices_to_requested_horizon(mock_db, monkeypatch):
     from datetime import date
 
-    from seed import seed_forecasts
+    from server.seed import seed_forecasts
 
     monkeypatch.delenv("SKIP_FORECAST_SEED", raising=False)
     seed_forecasts(mock_db)
