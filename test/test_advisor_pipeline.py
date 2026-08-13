@@ -171,7 +171,11 @@ def test_invented_numeral_flags_verify(monkeypatch, result_and_position):
     # Force deficit so route figures are assembled.
     from server.emissions.compliance import assess
 
-    pos = assess(r, cap_tco2e=max(0.0, r.total_emissions - 5000), carbon_price_idr_per_ton=42000.0)
+    pos = assess(
+        r,
+        cap_tco2e=max(0.0, r.total_emissions - 5000),
+        carbon_price_idr_per_ton=42000.0,
+    )
     monkeypatch.setenv("ELICE_API_KEY", "test-key")
     monkeypatch.setenv("ELICE_BASE_URL", "https://gateway.example/uuid/v1")
     monkeypatch.setattr(
@@ -184,6 +188,8 @@ def test_invented_numeral_flags_verify(monkeypatch, result_and_position):
     verify = next(e for e in events if e["stage"] == "verify" and e["status"] == "done")
     assert verify["payload"]["flagged"] is True
     assert "999999999" in verify["payload"]["unsupported"]
-    assemble = next(e for e in events if e["stage"] == "assemble" and e["status"] == "done")
+    assemble = next(
+        e for e in events if e["stage"] == "assemble" and e["status"] == "done"
+    )
     assert assemble["payload"]["routeComparison"]["chosen_route"] == "pay_tax"
     assert isinstance(verify["payload"]["citations"], list)

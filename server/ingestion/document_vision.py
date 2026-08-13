@@ -114,7 +114,9 @@ def _normalise(result: dict[str, Any]) -> ParsedDocument:
                     page=page_index,
                 )
             )
-    return ParsedDocument(elements=elements, page_count=int(result.get("page_count", 0)))
+    return ParsedDocument(
+        elements=elements, page_count=int(result.get("page_count", 0))
+    )
 
 
 async def parse(
@@ -128,12 +130,16 @@ async def parse(
     """
     base_url = os.environ.get("HELPY_BASE_URL")
     if not base_url:
-        raise ExtractionFailed("Document vision is not configured: HELPY_BASE_URL is not set")
+        raise ExtractionFailed(
+            "Document vision is not configured: HELPY_BASE_URL is not set"
+        )
     # Shared with the advisor deliberately: one Elice account, two
     # deployments. There is no HELPY_API_KEY.
     api_key = os.environ.get("ELICE_API_KEY")
     if not api_key:
-        raise ExtractionFailed("Document vision is not configured: ELICE_API_KEY is not set")
+        raise ExtractionFailed(
+            "Document vision is not configured: ELICE_API_KEY is not set"
+        )
 
     headers = {"Authorization": f"Bearer {api_key}"}
     base_url = base_url.rstrip("/")
@@ -151,7 +157,9 @@ async def parse(
                 job_id = submit.json()["job_id"]
 
                 while True:
-                    poll = await client.get(f"{base_url}/v1/jobs/{job_id}", headers=headers)
+                    poll = await client.get(
+                        f"{base_url}/v1/jobs/{job_id}", headers=headers
+                    )
                     poll.raise_for_status()
                     body = poll.json()
                     status = body.get("status")

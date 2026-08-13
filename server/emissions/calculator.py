@@ -33,7 +33,11 @@ class EmissionResult:
 
     @property
     def scope_1(self) -> float:
-        return self.dryer_emissions + self.kiln_heat_emissions + self.kiln_reductant_emissions
+        return (
+            self.dryer_emissions
+            + self.kiln_heat_emissions
+            + self.kiln_reductant_emissions
+        )
 
     @property
     def scope_2(self) -> float:

@@ -39,12 +39,19 @@ def test_nominal_interval_matches_hand_calculation():
     assert r.eaf_mwh == pytest.approx(mwh, rel=1e-12)
 
     assert r.dryer_emissions == pytest.approx(coal_dryer * C.ef_coal_thermal, rel=1e-12)
-    assert r.kiln_heat_emissions == pytest.approx(coal_kiln * C.ef_coal_thermal, rel=1e-12)
-    assert r.kiln_reductant_emissions == pytest.approx(reductant * C.ef_reductant, rel=1e-12)
+    assert r.kiln_heat_emissions == pytest.approx(
+        coal_kiln * C.ef_coal_thermal, rel=1e-12
+    )
+    assert r.kiln_reductant_emissions == pytest.approx(
+        reductant * C.ef_reductant, rel=1e-12
+    )
     assert r.eaf_emissions == pytest.approx(mwh * 1.0 * 1.0, rel=1e-12)
 
     assert r.total_emissions == pytest.approx(
-        r.dryer_emissions + r.kiln_heat_emissions + r.kiln_reductant_emissions + r.eaf_emissions,
+        r.dryer_emissions
+        + r.kiln_heat_emissions
+        + r.kiln_reductant_emissions
+        + r.eaf_emissions,
         rel=1e-12,
     )
 

@@ -145,7 +145,9 @@ async def _call_model(prompt: str) -> str:
         api_key = os.environ["ELICE_API_KEY"]
         base_url = os.environ["ELICE_BASE_URL"]
     except KeyError as exc:
-        raise RuntimeError(f"Advisor is not configured: {exc.args[0]} is not set") from exc
+        raise RuntimeError(
+            f"Advisor is not configured: {exc.args[0]} is not set"
+        ) from exc
 
     async with AsyncOpenAI(api_key=api_key, base_url=base_url) as client:
         response = await client.chat.completions.create(
@@ -178,7 +180,9 @@ async def _call_model(prompt: str) -> str:
     return content
 
 
-def _event(stage: str, status: str, payload: dict[str, Any] | None, *, placeholder: bool) -> dict:
+def _event(
+    stage: str, status: str, payload: dict[str, Any] | None, *, placeholder: bool
+) -> dict:
     """Every event's shape: `stage`/`status`/`payload` plus a top-level
     `placeholderCitations` flag repeated on every single event -- not just
     `verify`'s -- so a consumer never has to special-case which stage it is
@@ -210,7 +214,9 @@ async def run_pipeline(
 
     yield _event("retrieve", "running", None, placeholder=placeholder)
     clauses = select_clauses(is_compliant=position.is_compliant)
-    yield _event("retrieve", "done", {"refs": [c.ref for c in clauses]}, placeholder=placeholder)
+    yield _event(
+        "retrieve", "done", {"refs": [c.ref for c in clauses]}, placeholder=placeholder
+    )
 
     yield _event("assemble", "running", None, placeholder=placeholder)
     carbon_price = float(forecast["idxCarbonIdrPerTon"][0])
@@ -241,8 +247,10 @@ async def run_pipeline(
     yield _event("synthesise", "running", None, placeholder=placeholder)
     try:
         body = await _call_model(prompt)
-    except Exception as exc:  # noqa: BLE001 - isolates any model-call failure
-        yield _event("synthesise", "failed", {"error": str(exc)}, placeholder=placeholder)
+    except Exception as exc:
+        yield _event(
+            "synthesise", "failed", {"error": str(exc)}, placeholder=placeholder
+        )
         return
     yield _event("synthesise", "done", {"body": body}, placeholder=placeholder)
 

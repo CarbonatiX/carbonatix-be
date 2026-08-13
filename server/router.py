@@ -110,9 +110,7 @@ def get_twin_nodes(user=Depends(get_current_user), db=Depends(get_db)):
 
 
 @router.post("/twin/nodes", response_model=TwinNodesResponse, status_code=201)
-def add_twin_node(
-    req: TwinNode, user=Depends(get_current_user), db=Depends(get_db)
-):
+def add_twin_node(req: TwinNode, user=Depends(get_current_user), db=Depends(get_db)):
     return twin_service.add_node(db, user["company_id"], req)
 
 
@@ -124,9 +122,7 @@ def update_twin_nodes(
 
 
 @router.delete("/twin/nodes/{node_id}", response_model=TwinNodesResponse)
-def delete_twin_node(
-    node_id: str, user=Depends(get_current_user), db=Depends(get_db)
-):
+def delete_twin_node(node_id: str, user=Depends(get_current_user), db=Depends(get_db)):
     return twin_service.remove_node(db, user["company_id"], node_id)
 
 

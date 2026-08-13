@@ -131,7 +131,8 @@ def get_gaps(db, company_id: str) -> TwinGapsResponse:
         )
         for doc in docs
         for c in doc.get("extraction", {}).get("candidates", [])
-        if c.get("owning_process_type") and c["owning_process_type"] not in node_process_types
+        if c.get("owning_process_type")
+        and c["owning_process_type"] not in node_process_types
     ]
 
     pt_counts = Counter(n["process_type"] for n in twin.get("nodes", []))
@@ -147,7 +148,8 @@ def get_gaps(db, company_id: str) -> TwinGapsResponse:
         )
         for doc in docs
         for c in doc.get("extraction", {}).get("candidates", [])
-        if c.get("owning_process_type") and pt_counts.get(c["owning_process_type"], 0) > 1
+        if c.get("owning_process_type")
+        and pt_counts.get(c["owning_process_type"], 0) > 1
     ]
 
     return TwinGapsResponse(

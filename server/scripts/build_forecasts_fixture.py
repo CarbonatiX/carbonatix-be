@@ -7,6 +7,7 @@ Run once with the ML venv (needs prophet):
 
 Writes carbonatix-be/data/forecasts_mvp.json shaped as ForecastsResponse.
 """
+
 from __future__ import annotations
 
 import json
@@ -55,7 +56,7 @@ def _load_nickel() -> dict:
 
 def _load_carbon() -> dict:
     sys.path.insert(0, str(ML_ROOT))
-    from carbon.forecasting.contract import to_payload_dict  # noqa: E402
+    from carbon.forecasting.contract import to_payload_dict
 
     with CARBON_PKL.open("rb") as f:
         model = pickle.load(f)
@@ -71,7 +72,9 @@ def _load_carbon() -> dict:
 
     if payload.get("model"):
         payload["model"] = {
-            k: payload["model"][k] for k in CARBON_MODEL_META_KEYS if k in payload["model"]
+            k: payload["model"][k]
+            for k in CARBON_MODEL_META_KEYS
+            if k in payload["model"]
         }
 
     anchors = []
@@ -90,7 +93,9 @@ def _load_carbon() -> dict:
         )
     payload["monthly_anchors"] = anchors
 
-    if payload.get("market_depth") and isinstance(payload["market_depth"].get("window"), list):
+    if payload.get("market_depth") and isinstance(
+        payload["market_depth"].get("window"), list
+    ):
         payload["market_depth"]["window"] = tuple(payload["market_depth"]["window"])
 
     return payload
@@ -133,9 +138,11 @@ def main() -> None:
     )
     print(
         "nickel last_observed:",
-        validated.nickel.history.last_observed_price_usd_per_ton
-        if validated.nickel.history
-        else None,
+        (
+            validated.nickel.history.last_observed_price_usd_per_ton
+            if validated.nickel.history
+            else None
+        ),
     )
 
 

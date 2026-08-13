@@ -168,7 +168,9 @@ def _slice_points_by_horizon(points: list, horizon_days: int) -> list:
     return [p for p in points if date.fromisoformat(str(p.date)) <= cutoff]
 
 
-def _slice_cached_forecast(cached: ForecastsResponse, horizon_days: int) -> ForecastsResponse:
+def _slice_cached_forecast(
+    cached: ForecastsResponse, horizon_days: int
+) -> ForecastsResponse:
     if horizon_days >= cached.horizon_days:
         return cached
 

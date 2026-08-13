@@ -66,6 +66,7 @@ def test_add_twin_node_updates_timestamp(mock_db):
     original_updated_at = twin["updated_at"]
 
     import time
+
     time.sleep(0.01)
 
     node = {"node_id": "node_1", "type": "smelting"}
@@ -83,6 +84,7 @@ def test_remove_twin_node_updates_timestamp(mock_db):
     add_twin_node(mock_db, company_id, node)
 
     import time
+
     time.sleep(0.01)
 
     result = remove_twin_node(mock_db, company_id, "node_1")

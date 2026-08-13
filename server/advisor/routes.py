@@ -38,10 +38,14 @@ class RouteComparison:
     def figure_entries(self) -> dict[str, str]:
         """Human-labelled figures injected into the prompt + numeral permit set."""
         chosen_label = (
-            "Beli kredit (IDR)" if self.chosen_route == "buy" else "Bayar pajak karbon (IDR)"
+            "Beli kredit (IDR)"
+            if self.chosen_route == "buy"
+            else "Bayar pajak karbon (IDR)"
         )
         rejected_label = (
-            "Beli kredit (IDR)" if self.rejected_route == "buy" else "Bayar pajak karbon (IDR)"
+            "Beli kredit (IDR)"
+            if self.rejected_route == "buy"
+            else "Bayar pajak karbon (IDR)"
         )
         return {
             "Defisit (tCO2e)": f"{self.deficit_tco2e:.1f}",

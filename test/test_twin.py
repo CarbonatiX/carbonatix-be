@@ -155,7 +155,9 @@ def test_delete_twin_nodes(client, auth_headers, mock_db):
     assert all(n["node_id"] != "node_temp" for n in response.json()["nodes"])
 
 
-def test_upload_twin_model_persists_to_gridfs(client, auth_headers, mock_db, monkeypatch):
+def test_upload_twin_model_persists_to_gridfs(
+    client, auth_headers, mock_db, monkeypatch
+):
     from server.models.user import find_user_by_email
 
     user = find_user_by_email(mock_db, "user@example.com")
@@ -233,5 +235,10 @@ def test_commit_run_succeeds_without_gaps(
 
     assert response.status_code == 201
     assert "run" in response.json()
-    assert response.json()["run"]["forecast_snapshot"]["carbon"]["limit_price_idr"] == 59102.0
-    assert response.json()["run"]["forecast_snapshot"]["carbon"]["tax_rate_idr"] == 30000.0
+    assert (
+        response.json()["run"]["forecast_snapshot"]["carbon"]["limit_price_idr"]
+        == 59102.0
+    )
+    assert (
+        response.json()["run"]["forecast_snapshot"]["carbon"]["tax_rate_idr"] == 30000.0
+    )

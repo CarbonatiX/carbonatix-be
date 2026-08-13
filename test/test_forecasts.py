@@ -86,7 +86,9 @@ def test_seed_forecasts_upserts_mvp_fixture(mock_db, monkeypatch):
     assert result.horizon_days == 30
     assert result.carbon.model.model_id == "carbon_prophet_20260810"
     assert result.nickel.model.dataset_version == "lme_nickel_2026_08_05"
-    assert result.nickel.points[0].provenance.model_id.startswith("nickel_naive_persistence")
+    assert result.nickel.points[0].provenance.model_id.startswith(
+        "nickel_naive_persistence"
+    )
     assert len(result.nickel.points) == 22
     assert len(result.carbon.points) == 30
 
@@ -110,7 +112,9 @@ def test_cached_forecast_slices_to_requested_horizon(mock_db, monkeypatch):
     assert result.horizon_days == 7
     assert result.carbon.points
     start = date.fromisoformat(result.carbon.points[0].date)
-    assert all((date.fromisoformat(p.date) - start).days <= 6 for p in result.carbon.points)
+    assert all(
+        (date.fromisoformat(p.date) - start).days <= 6 for p in result.carbon.points
+    )
     # Nickel business-day series: fewer points than calendar days.
     assert 1 <= len(result.nickel.points) <= 7
     assert result.carbon.model.model_id == "carbon_prophet_20260810"

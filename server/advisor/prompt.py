@@ -90,7 +90,11 @@ _UNIT_WORDS = ("tco2e", "ton", "rupiah", "rp")
 _DIGIT_MAGNITUDE_JOINER = r"(?:[ \t]{0,3}|[\-‐‑‒–—―])"
 
 _DIGIT_THEN_MAGNITUDE = re.compile(
-    r"\d[\d.,]*" + _DIGIT_MAGNITUDE_JOINER + r"(?:" + "|".join(_MAGNITUDE_WORDS) + r")\b",
+    r"\d[\d.,]*"
+    + _DIGIT_MAGNITUDE_JOINER
+    + r"(?:"
+    + "|".join(_MAGNITUDE_WORDS)
+    + r")\b",
     re.IGNORECASE,
 )
 # A run of 1-8 number-word tokens immediately followed by a unit -- e.g.
@@ -302,7 +306,9 @@ def build_prompt(
 
     figures_block = "\n".join(f"- {k}: {v}" for k, v in figures.items())
     clauses_block = "\n\n".join(f"[{c.ref}] {c.title}\n{c.text}" for c in clauses)
-    regulation_notice = _PLACEHOLDER_WARNING if _clauses_are_placeholder(clauses) else ""
+    regulation_notice = (
+        _PLACEHOLDER_WARNING if _clauses_are_placeholder(clauses) else ""
+    )
     route_instructions = (
         _ROUTE_INSTRUCTIONS_DEFICIT if route_figures else _ROUTE_INSTRUCTIONS_SURPLUS
     )
@@ -338,7 +344,9 @@ def _citation_spans(output: str, permitted: set[str]) -> list[tuple[int, int]]:
     clause's `ref` text, so numerals that are genuinely part of a citation
     (e.g. "18" in "...Pasal 18") are excluded from the numeral scan without
     exempting that digit sequence anywhere else it appears."""
-    refs = [p[len(_CITATION_PREFIX) :] for p in permitted if p.startswith(_CITATION_PREFIX)]
+    refs = [
+        p[len(_CITATION_PREFIX) :] for p in permitted if p.startswith(_CITATION_PREFIX)
+    ]
     spans = []
     for ref in refs:
         start = 0

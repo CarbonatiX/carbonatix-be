@@ -54,7 +54,9 @@ def calculate_emissions(
             scope_1=round(raw.scope_1, 4),
             scope_2=round(raw.scope_2, 4),
             total_emissions=round(raw.total_emissions, 4),
-            intensity_per_tonne_ni=(round(intensity, 4) if intensity is not None else None),
+            intensity_per_tonne_ni=(
+                round(intensity, 4) if intensity is not None else None
+            ),
             dry_ore_tons=round(raw.dry_ore_tons, 4),
             dryer_coal_tons=round(raw.dryer_coal_tons, 4),
             kiln_coal_tons=round(raw.kiln_coal_tons, 4),

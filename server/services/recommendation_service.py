@@ -53,16 +53,22 @@ def _forecast_for_prompt(forecast_snapshot: dict) -> dict:
     carbon = (forecast_snapshot or {}).get("carbon") or {}
 
     if nickel.get("price_usd_per_ton") is None:
-        raise RuntimeError("Forecast unavailable: nickel price missing from run snapshot")
+        raise RuntimeError(
+            "Forecast unavailable: nickel price missing from run snapshot"
+        )
     if carbon.get("limit_price_idr") is None:
-        raise RuntimeError("Forecast unavailable: carbon price missing from run snapshot")
+        raise RuntimeError(
+            "Forecast unavailable: carbon price missing from run snapshot"
+        )
 
     nickel_price = float(nickel["price_usd_per_ton"])
     carbon_price = float(carbon["limit_price_idr"])
     tax_rate = float(carbon.get("tax_rate_idr") or 0)
     market_depth = float(carbon.get("market_depth_median_tco2e") or 0)
     if tax_rate <= 0:
-        raise RuntimeError("Forecast unavailable: carbon tax rate missing from run snapshot")
+        raise RuntimeError(
+            "Forecast unavailable: carbon tax rate missing from run snapshot"
+        )
 
     return {
         "dates": ["snapshot"],
@@ -83,7 +89,9 @@ def _forecast_for_prompt(forecast_snapshot: dict) -> dict:
     }
 
 
-async def stream_recommendation(db, run: RunDetail, company_id: str) -> AsyncIterator[str]:
+async def stream_recommendation(
+    db, run: RunDetail, company_id: str
+) -> AsyncIterator[str]:
     """Yield SSE `data:` lines for the four-stage advisor pipeline."""
     ensure_ai_env()
     try:
@@ -106,7 +114,9 @@ async def stream_recommendation(db, run: RunDetail, company_id: str) -> AsyncIte
 
     compliance = run.compliance
     compliance_dict = (
-        compliance.model_dump() if hasattr(compliance, "model_dump") else dict(compliance)
+        compliance.model_dump()
+        if hasattr(compliance, "model_dump")
+        else dict(compliance)
     )
     position = _position_from_run(compliance_dict, result.total_emissions)
 
@@ -147,5 +157,5 @@ async def stream_recommendation(db, run: RunDetail, company_id: str) -> AsyncIte
                     confidence=float(payload.get("confidence") or 0),
                     model_id=str(payload.get("model") or ""),
                 )
-            except Exception:  # noqa: BLE001 - persistence must not break SSE
+            except Exception:
                 pass
