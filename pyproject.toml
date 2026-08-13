@@ -6,8 +6,29 @@ line-length = 100
 select = ["E", "F", "I", "B", "SIM", "RUF"]
 ignore = ["B008"]
 
+# Each entry below suppresses a rule that is wrong for that specific file, not a
+# backlog of deferred cleanup. Verified case by case before being added.
+[tool.ruff.lint.per-file-ignores]
+# Verbatim Indonesian regulatory clause text (the RFC-007 corpus). The strings
+# are quoted law and must stay byte-exact, so the long lines cannot be rewrapped.
+"server/advisor/corpus.py" = ["E501"]
+# `_DIGIT_MAGNITUDE_JOINER` deliberately enumerates every Unicode dash variant
+# (‐ ‑ ‒ – — ―) so numerals joined by any of them match; normalising these to
+# ASCII would silently break numeral grounding in legal prose. The surrounding
+# comment block explains the design.
+"server/advisor/prompt.py" = ["E501", "RUF001", "RUF003"]
+# `−` (MINUS SIGN) and `×` (MULTIPLICATION SIGN) are the correct typographic
+# characters in these user-facing formula templates; ASCII would be a downgrade.
+"server/ingestion/mapping.py" = ["RUF001"]
+# The if/else carries an explanatory comment on its else branch, and ruff's
+# suggested ternary is ~100 characters — the current form is more readable.
+"server/ingestion/verify.py" = ["SIM108"]
+# Best-effort persistence: the try/except/pass is intentional. Left as-is rather
+# than restyling behaviour-adjacent advisor code; revisit as its own change.
+"server/services/recommendation_service.py" = ["SIM105"]
+
 [tool.pytest.ini_options]
-pythonpath = [".", "server"]
+pythonpath = ["."]
 testpaths = ["test"]
 filterwarnings = [
     "ignore:Using `httpx` with `starlette.testclient` is deprecated:starlette.exceptions.StarletteDeprecationWarning",

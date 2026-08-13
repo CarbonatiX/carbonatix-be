@@ -1,8 +1,8 @@
 from dataclasses import replace
 
-from emissions.calculator import calculate_emissions as _calculate
-from emissions.constants import DEFAULT_CONSTANTS, ProcessConstants
-from schemas import EmissionRequest, EmissionResponse, EmissionResult
+from server.emissions.calculator import calculate_emissions as _calculate
+from server.emissions.constants import DEFAULT_CONSTANTS, ProcessConstants
+from server.schemas import EmissionRequest, EmissionResponse, EmissionResult
 
 
 def constants_from_site_spec(site_spec: dict | None) -> ProcessConstants:
@@ -54,7 +54,9 @@ def calculate_emissions(
             scope_1=round(raw.scope_1, 4),
             scope_2=round(raw.scope_2, 4),
             total_emissions=round(raw.total_emissions, 4),
-            intensity_per_tonne_ni=(round(intensity, 4) if intensity is not None else None),
+            intensity_per_tonne_ni=(
+                round(intensity, 4) if intensity is not None else None
+            ),
             dry_ore_tons=round(raw.dry_ore_tons, 4),
             dryer_coal_tons=round(raw.dryer_coal_tons, 4),
             kiln_coal_tons=round(raw.kiln_coal_tons, 4),

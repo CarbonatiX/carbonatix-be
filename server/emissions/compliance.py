@@ -3,12 +3,14 @@
 import math
 from dataclasses import dataclass
 
-from emissions.calculator import EmissionResult
+from server.emissions.calculator import EmissionResult
 
 __all__ = ["CompliancePosition", "assess", "suggest_cap_from_baseline"]
 
-# Default IDX-style carbon price used when company has no override (IDR / tCO2e).
-DEFAULT_CARBON_PRICE_IDR = 35_200.0
+from server.pricing import STUB_CARBON_PRICE_IDR
+
+# Same stub used by forecast_service / advisor (disclosed as synthetic on UI).
+DEFAULT_CARBON_PRICE_IDR = STUB_CARBON_PRICE_IDR
 
 
 @dataclass(frozen=True)
@@ -29,7 +31,9 @@ def assess(
     carbon_price_idr_per_ton: float = DEFAULT_CARBON_PRICE_IDR,
 ) -> CompliancePosition:
     if not (math.isfinite(cap_tco2e) and cap_tco2e >= 0):
-        raise ValueError(f"cap_tco2e must be non-negative and finite, got {cap_tco2e!r}")
+        raise ValueError(
+            f"cap_tco2e must be non-negative and finite, got {cap_tco2e!r}"
+        )
     if not (math.isfinite(carbon_price_idr_per_ton) and carbon_price_idr_per_ton >= 0):
         raise ValueError(
             f"carbon_price_idr_per_ton must be non-negative and finite, "
@@ -53,7 +57,9 @@ def suggest_cap_from_baseline(
     reduction_target: float,
 ) -> float:
     if not 0.0 <= reduction_target < 1.0:
-        raise ValueError(f"reduction_target must be a fraction in [0, 1), got {reduction_target!r}")
+        raise ValueError(
+            f"reduction_target must be a fraction in [0, 1), got {reduction_target!r}"
+        )
     if not (math.isfinite(baseline_total_tco2e) and baseline_total_tco2e >= 0):
         raise ValueError(
             f"baseline_total_tco2e must be non-negative and finite, got {baseline_total_tco2e!r}"

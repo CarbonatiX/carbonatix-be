@@ -1,8 +1,9 @@
 import gridfs
-from deps import get_current_user, get_db
 from fastapi import APIRouter, Depends, File, Form, HTTPException, Query, UploadFile
 from fastapi.responses import StreamingResponse
-from schemas import (
+
+from server.deps import get_current_user, get_db
+from server.schemas import (
     AuthResponse,
     CompanyResponse,
     CompanyUpdate,
@@ -20,7 +21,7 @@ from schemas import (
     TwinNodesResponse,
     TwinNodesUpdate,
 )
-from services import (
+from server.services import (
     auth_service,
     company_service,
     document_service,
@@ -47,12 +48,19 @@ def health():
 
 @router.post("/auth/register", response_model=AuthResponse, status_code=201)
 def register(req: RegisterRequest, db=Depends(get_db)):
-    return auth_service.register(db, req)
+    try:
+        return auth_service.register(db, req)
+    except ValueError as exc:
+        status = 409 if "already registered" in str(exc) else 400
+        raise HTTPException(status_code=status, detail=str(exc)) from exc
 
 
 @router.post("/auth/login", response_model=AuthResponse)
 def login(req: LoginRequest, db=Depends(get_db)):
-    return auth_service.login(db, req)
+    try:
+        return auth_service.login(db, req)
+    except ValueError as exc:
+        raise HTTPException(status_code=401, detail=str(exc)) from exc
 
 
 # ── Company ───────────────────────────────────────────────────────────
@@ -102,9 +110,7 @@ def get_twin_nodes(user=Depends(get_current_user), db=Depends(get_db)):
 
 
 @router.post("/twin/nodes", response_model=TwinNodesResponse, status_code=201)
-def add_twin_node(
-    req: TwinNode, user=Depends(get_current_user), db=Depends(get_db)
-):
+def add_twin_node(req: TwinNode, user=Depends(get_current_user), db=Depends(get_db)):
     return twin_service.add_node(db, user["company_id"], req)
 
 
@@ -116,9 +122,7 @@ def update_twin_nodes(
 
 
 @router.delete("/twin/nodes/{node_id}", response_model=TwinNodesResponse)
-def delete_twin_node(
-    node_id: str, user=Depends(get_current_user), db=Depends(get_db)
-):
+def delete_twin_node(node_id: str, user=Depends(get_current_user), db=Depends(get_db)):
     return twin_service.remove_node(db, user["company_id"], node_id)
 
 
@@ -188,6 +192,8 @@ async def get_recommendation(
     except ValueError as exc:
         raise HTTPException(status_code=404, detail=str(exc)) from exc
     return StreamingResponse(
-        recommendation_service.stream_recommendation(run_resp.run),
+        recommendation_service.stream_recommendation(
+            db, run_resp.run, user["company_id"]
+        ),
         media_type="text/event-stream",
     )

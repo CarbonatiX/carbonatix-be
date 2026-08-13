@@ -2,7 +2,8 @@ from datetime import datetime, timedelta, timezone
 
 import bcrypt
 import jwt
-from config import settings
+
+from server.config import settings
 
 ALGORITHM = "HS256"
 TOKEN_EXPIRY_HOURS = 24

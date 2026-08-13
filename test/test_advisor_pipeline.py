@@ -4,10 +4,9 @@ import asyncio
 
 import pytest
 
-from advisor.pipeline import run_pipeline
-from emissions.calculator import calculate_emissions
-from emissions.compliance import assess
-
+from server.advisor.pipeline import run_pipeline
+from server.emissions.calculator import calculate_emissions
+from server.emissions.compliance import assess
 
 NOMINAL = {
     "wet_ore_input_tons": 10_000.0,
@@ -22,7 +21,9 @@ NOMINAL = {
 
 FORECAST = {
     "lmeUsdPerTon": [15400.0],
-    "idxCarbonIdrPerTon": [35200.0],
+    "idxCarbonIdrPerTon": [42000.0],
+    "taxRateIdrPerTon": 30000.0,
+    "marketDepthMedianTco2e": 50000.0,
     "synthetic": True,
     "provenance": {"lmeUsdPerTon": {"synthetic": True}},
 }
@@ -88,7 +89,7 @@ def result_and_position():
 
 
 def test_pipeline_emits_four_stages(monkeypatch, result_and_position):
-    from advisor import pipeline
+    from server.advisor import pipeline
 
     captured = _Captured()
     r, pos = result_and_position
@@ -112,7 +113,7 @@ def test_pipeline_emits_four_stages(monkeypatch, result_and_position):
 
 
 def test_missing_elice_env_fails_synthesise(monkeypatch, result_and_position):
-    from advisor import pipeline
+    from server.advisor import pipeline
 
     monkeypatch.delenv("ELICE_API_KEY", raising=False)
     monkeypatch.delenv("ELICE_BASE_URL", raising=False)
@@ -126,7 +127,69 @@ def test_missing_elice_env_fails_synthesise(monkeypatch, result_and_position):
 
 
 def test_corpus_has_verified_clauses():
-    from advisor.corpus import CORPUS, has_placeholder_text
+    from server.advisor.corpus import CORPUS, has_placeholder_text
 
     assert len(CORPUS) >= 5
     assert has_placeholder_text() is False
+
+
+def test_deficit_route_prefers_tax_when_credit_above_tax():
+    from server.advisor.routes import build_route_comparison
+
+    routes = build_route_comparison(
+        deficit_tco2e=1000.0,
+        carbon_price_idr=42000.0,
+        tax_rate_idr=30000.0,
+        market_depth_median_tco2e=50000.0,
+    )
+    assert routes is not None
+    assert routes.chosen_route == "pay_tax"
+    assert routes.rejected_route == "buy"
+    assert routes.buy_cost_idr == 42_000_000.0
+    assert routes.tax_cost_idr == 30_000_000.0
+    assert routes.exceeds_observed_depth is False
+
+
+def test_deficit_route_prefers_buy_when_credit_below_tax():
+    from server.advisor.routes import build_route_comparison
+
+    routes = build_route_comparison(
+        deficit_tco2e=1000.0,
+        carbon_price_idr=25000.0,
+        tax_rate_idr=30000.0,
+        market_depth_median_tco2e=50000.0,
+    )
+    assert routes is not None
+    assert routes.chosen_route == "buy"
+    assert routes.rejected_route == "pay_tax"
+
+
+def test_invented_numeral_flags_verify(monkeypatch, result_and_position):
+    from server.advisor import pipeline
+
+    r, pos = result_and_position
+    # Force deficit so route figures are assembled.
+    from server.emissions.compliance import assess
+
+    pos = assess(
+        r,
+        cap_tco2e=max(0.0, r.total_emissions - 5000),
+        carbon_price_idr_per_ton=42000.0,
+    )
+    monkeypatch.setenv("ELICE_API_KEY", "test-key")
+    monkeypatch.setenv("ELICE_BASE_URL", "https://gateway.example/uuid/v1")
+    monkeypatch.setattr(
+        pipeline,
+        "AsyncOpenAI",
+        _fake_openai(_Captured(), content="Bayar denda 999999999 ton."),
+    )
+
+    events = _collect(r, pos, FORECAST)
+    verify = next(e for e in events if e["stage"] == "verify" and e["status"] == "done")
+    assert verify["payload"]["flagged"] is True
+    assert "999999999" in verify["payload"]["unsupported"]
+    assemble = next(
+        e for e in events if e["stage"] == "assemble" and e["status"] == "done"
+    )
+    assert assemble["payload"]["routeComparison"]["chosen_route"] == "pay_tax"
+    assert isinstance(verify["payload"]["citations"], list)

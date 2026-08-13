@@ -12,7 +12,9 @@ def test_calculate_emissions_unit(sample_emission_request):
     assert result.dry_ore_tons == pytest.approx(700.0)
     assert result.nickel_output_tons == pytest.approx(9.45)  # 700 * 0.015 * 0.90
     assert result.scope_1 == pytest.approx(
-        result.dryer_emissions + result.kiln_heat_emissions + result.kiln_reductant_emissions
+        result.dryer_emissions
+        + result.kiln_heat_emissions
+        + result.kiln_reductant_emissions
     )
     assert result.scope_2 == pytest.approx(result.eaf_emissions)
     assert result.total_emissions == pytest.approx(result.scope_1 + result.scope_2)

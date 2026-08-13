@@ -1,0 +1,704 @@
+{
+  "generated_at": "2026-08-12T11:50:09+00:00",
+  "horizon_days": 30,
+  "nickel": {
+    "series_id": "nickel_cash_settlement_usd",
+    "available": true,
+    "reason": null,
+    "currency_unit": "usd_per_ton",
+    "interval_level": 0.8,
+    "points": [
+      {
+        "date": "2026-08-06",
+        "price_usd_per_ton": 16915.0,
+        "lower_usd_per_ton": 16647.691247629602,
+        "upper_usd_per_ton": 17186.600877208068,
+        "provenance": {
+          "bucket": "short",
+          "model_id": "nickel_naive_persistence_lme_nickel_2026_08_05_featureset_A_no_pmi_v2",
+          "cache_status": "miss"
+        }
+      },
+      {
+        "date": "2026-08-07",
+        "price_usd_per_ton": 16915.0,
+        "lower_usd_per_ton": 16538.20944675067,
+        "upper_usd_per_ton": 17300.374984440325,
+        "provenance": {
+          "bucket": "short",
+          "model_id": "nickel_naive_persistence_lme_nickel_2026_08_05_featureset_A_no_pmi_v2",
+          "cache_status": "miss"
+        }
+      },
+      {
+        "date": "2026-08-10",
+        "price_usd_per_ton": 16915.0,
+        "lower_usd_per_ton": 16454.689555153676,
+        "upper_usd_per_ton": 17388.187363910907,
+        "provenance": {
+          "bucket": "short",
+          "model_id": "nickel_naive_persistence_lme_nickel_2026_08_05_featureset_A_no_pmi_v2",
+          "cache_status": "miss"
+        }
+      },
+      {
+        "date": "2026-08-11",
+        "price_usd_per_ton": 16915.0,
+        "lower_usd_per_ton": 16384.606791392445,
+        "upper_usd_per_ton": 17462.5627970706,
+        "provenance": {
+          "bucket": "short",
+          "model_id": "nickel_naive_persistence_lme_nickel_2026_08_05_featureset_A_no_pmi_v2",
+          "cache_status": "miss"
+        }
+      },
+      {
+        "date": "2026-08-12",
+        "price_usd_per_ton": 16915.0,
+        "lower_usd_per_ton": 16323.11001082998,
+        "upper_usd_per_ton": 17528.352428560996,
+        "provenance": {
+          "bucket": "short",
+          "model_id": "nickel_naive_persistence_lme_nickel_2026_08_05_featureset_A_no_pmi_v2",
+          "cache_status": "miss"
+        }
+      },
+      {
+        "date": "2026-08-13",
+        "price_usd_per_ton": 16915.0,
+        "lower_usd_per_ton": 16267.711361081554,
+        "upper_usd_per_ton": 17588.044110771436,
+        "provenance": {
+          "bucket": "short",
+          "model_id": "nickel_naive_persistence_lme_nickel_2026_08_05_featureset_A_no_pmi_v2",
+          "cache_status": "miss"
+        }
+      },
+      {
+        "date": "2026-08-14",
+        "price_usd_per_ton": 16915.0,
+        "lower_usd_per_ton": 16216.933007896383,
+        "upper_usd_per_ton": 17643.115677957307,
+        "provenance": {
+          "bucket": "short",
+          "model_id": "nickel_naive_persistence_lme_nickel_2026_08_05_featureset_A_no_pmi_v2",
+          "cache_status": "miss"
+        }
+      },
+      {
+        "date": "2026-08-17",
+        "price_usd_per_ton": 16915.0,
+        "lower_usd_per_ton": 16169.812101956435,
+        "upper_usd_per_ton": 17694.529979441246,
+        "provenance": {
+          "bucket": "short",
+          "model_id": "nickel_naive_persistence_lme_nickel_2026_08_05_featureset_A_no_pmi_v2",
+          "cache_status": "miss"
+        }
+      },
+      {
+        "date": "2026-08-18",
+        "price_usd_per_ton": 16915.0,
+        "lower_usd_per_ton": 16125.67987448516,
+        "upper_usd_per_ton": 17742.95578400441,
+        "provenance": {
+          "bucket": "short",
+          "model_id": "nickel_naive_persistence_lme_nickel_2026_08_05_featureset_A_no_pmi_v2",
+          "cache_status": "miss"
+        }
+      },
+      {
+        "date": "2026-08-19",
+        "price_usd_per_ton": 16915.0,
+        "lower_usd_per_ton": 16084.049419793415,
+        "upper_usd_per_ton": 17788.879997340555,
+        "provenance": {
+          "bucket": "medium",
+          "model_id": "nickel_naive_persistence_lme_nickel_2026_08_05_featureset_A_no_pmi_v2",
+          "cache_status": "miss"
+        }
+      },
+      {
+        "date": "2026-08-20",
+        "price_usd_per_ton": 16915.0,
+        "lower_usd_per_ton": 16044.553179072167,
+        "upper_usd_per_ton": 17832.670178263306,
+        "provenance": {
+          "bucket": "medium",
+          "model_id": "nickel_naive_persistence_lme_nickel_2026_08_05_featureset_A_no_pmi_v2",
+          "cache_status": "miss"
+        }
+      },
+      {
+        "date": "2026-08-21",
+        "price_usd_per_ton": 16915.0,
+        "lower_usd_per_ton": 16006.90560783231,
+        "upper_usd_per_ton": 17874.611871266392,
+        "provenance": {
+          "bucket": "medium",
+          "model_id": "nickel_naive_persistence_lme_nickel_2026_08_05_featureset_A_no_pmi_v2",
+          "cache_status": "miss"
+        }
+      },
+      {
+        "date": "2026-08-24",
+        "price_usd_per_ton": 16915.0,
+        "lower_usd_per_ton": 15970.879637176522,
+        "upper_usd_per_ton": 17914.932145251732,
+        "provenance": {
+          "bucket": "medium",
+          "model_id": "nickel_naive_persistence_lme_nickel_2026_08_05_featureset_A_no_pmi_v2",
+          "cache_status": "miss"
+        }
+      },
+      {
+        "date": "2026-08-25",
+        "price_usd_per_ton": 16915.0,
+        "lower_usd_per_ton": 15936.291168328318,
+        "upper_usd_per_ton": 17953.81509900042,
+        "provenance": {
+          "bucket": "medium",
+          "model_id": "nickel_naive_persistence_lme_nickel_2026_08_05_featureset_A_no_pmi_v2",
+          "cache_status": "miss"
+        }
+      },
+      {
+        "date": "2026-08-26",
+        "price_usd_per_ton": 16915.0,
+        "lower_usd_per_ton": 15902.988483933283,
+        "upper_usd_per_ton": 17991.412449871477,
+        "provenance": {
+          "bucket": "medium",
+          "model_id": "nickel_naive_persistence_lme_nickel_2026_08_05_featureset_A_no_pmi_v2",
+          "cache_status": "miss"
+        }
+      },
+      {
+        "date": "2026-08-27",
+        "price_usd_per_ton": 16915.0,
+        "lower_usd_per_ton": 15870.84479506612,
+        "upper_usd_per_ton": 18027.850986794812,
+        "provenance": {
+          "bucket": "long",
+          "model_id": "nickel_naive_persistence_lme_nickel_2026_08_05_featureset_A_no_pmi_v2",
+          "cache_status": "miss"
+        }
+      },
+      {
+        "date": "2026-08-28",
+        "price_usd_per_ton": 16915.0,
+        "lower_usd_per_ton": 15839.752858577927,
+        "upper_usd_per_ton": 18063.237952923922,
+        "provenance": {
+          "bucket": "long",
+          "model_id": "nickel_naive_persistence_lme_nickel_2026_08_05_featureset_A_no_pmi_v2",
+          "cache_status": "miss"
+        }
+      },
+      {
+        "date": "2026-08-31",
+        "price_usd_per_ton": 16915.0,
+        "lower_usd_per_ton": 15809.62100246877,
+        "upper_usd_per_ton": 18097.66502026336,
+        "provenance": {
+          "bucket": "long",
+          "model_id": "nickel_naive_persistence_lme_nickel_2026_08_05_featureset_A_no_pmi_v2",
+          "cache_status": "miss"
+        }
+      },
+      {
+        "date": "2026-09-01",
+        "price_usd_per_ton": 16915.0,
+        "lower_usd_per_ton": 15780.370133695384,
+        "upper_usd_per_ton": 18131.21128186099,
+        "provenance": {
+          "bucket": "long",
+          "model_id": "nickel_naive_persistence_lme_nickel_2026_08_05_featureset_A_no_pmi_v2",
+          "cache_status": "miss"
+        }
+      },
+      {
+        "date": "2026-09-02",
+        "price_usd_per_ton": 16915.0,
+        "lower_usd_per_ton": 15751.931446979475,
+        "upper_usd_per_ton": 18163.94554299972,
+        "provenance": {
+          "bucket": "long",
+          "model_id": "nickel_naive_persistence_lme_nickel_2026_08_05_featureset_A_no_pmi_v2",
+          "cache_status": "miss"
+        }
+      },
+      {
+        "date": "2026-09-03",
+        "price_usd_per_ton": 16915.0,
+        "lower_usd_per_ton": 15724.244643771679,
+        "upper_usd_per_ton": 18195.928102233524,
+        "provenance": {
+          "bucket": "long",
+          "model_id": "nickel_naive_persistence_lme_nickel_2026_08_05_featureset_A_no_pmi_v2",
+          "cache_status": "miss"
+        }
+      },
+      {
+        "date": "2026-09-04",
+        "price_usd_per_ton": 16915.0,
+        "lower_usd_per_ton": 15697.25652904939,
+        "upper_usd_per_ton": 18227.2121545896,
+        "provenance": {
+          "bucket": "long",
+          "model_id": "nickel_naive_persistence_lme_nickel_2026_08_05_featureset_A_no_pmi_v2",
+          "cache_status": "miss"
+        }
+      }
+    ],
+    "summary": {
+      "mean_usd_per_ton": 16915.0,
+      "horizon_end_usd_per_ton": 16915.0,
+      "trend": "flat",
+      "trend_confidence": 0.0,
+      "change_pct": 0.0
+    },
+    "history": {
+      "window": [
+        "2021-01-04",
+        "2026-08-05"
+      ],
+      "last_observed_price_usd_per_ton": 16915.0,
+      "last_observed_date": "2026-08-05"
+    },
+    "model": {
+      "bucket_models": [
+        {
+          "bucket": "short",
+          "model_class": "naive_persistence",
+          "trained_at": "2026-08-09T08:17:30+00:00"
+        },
+        {
+          "bucket": "medium",
+          "model_class": "naive_persistence",
+          "trained_at": "2026-08-09T08:17:30+00:00"
+        },
+        {
+          "bucket": "long",
+          "model_class": "naive_persistence",
+          "trained_at": "2026-08-09T08:17:30+00:00"
+        }
+      ],
+      "dataset_version": "lme_nickel_2026_08_05",
+      "feature_set_version": "f2_calendar_stock_v1",
+      "ruleset_version": "validation_v2_lme"
+    },
+    "staleness": {
+      "is_stale": true,
+      "as_of": "2026-08-09T12:43:00Z",
+      "age_hours": 108.717
+    },
+    "disclosures": []
+  },
+  "carbon": {
+    "series_id": "idx_carbon_regular",
+    "available": true,
+    "reason": null,
+    "currency_unit": "idr_per_ton",
+    "interval_level": 0.8,
+    "points": [
+      {
+        "date": "2026-07-01",
+        "price_idr_per_ton": 58898.16494543693,
+        "lower_idr_per_ton": 54968.746936635005,
+        "upper_idr_per_ton": 63108.47576603418
+      },
+      {
+        "date": "2026-07-02",
+        "price_idr_per_ton": 58898.00789143207,
+        "lower_idr_per_ton": 53418.79673061323,
+        "upper_idr_per_ton": 64939.22637518331
+      },
+      {
+        "date": "2026-07-03",
+        "price_idr_per_ton": 58897.85083742721,
+        "lower_idr_per_ton": 52259.144839323424,
+        "upper_idr_per_ton": 66379.90047356344
+      },
+      {
+        "date": "2026-07-06",
+        "price_idr_per_ton": 58897.37967541263,
+        "lower_idr_per_ton": 51300.79786130947,
+        "upper_idr_per_ton": 67618.8573520397
+      },
+      {
+        "date": "2026-07-07",
+        "price_idr_per_ton": 58897.22262140777,
+        "lower_idr_per_ton": 50471.2713255453,
+        "upper_idr_per_ton": 68729.84851403856
+      },
+      {
+        "date": "2026-07-08",
+        "price_idr_per_ton": 58897.065567402904,
+        "lower_idr_per_ton": 49732.86020222171,
+        "upper_idr_per_ton": 69749.94638044148
+      },
+      {
+        "date": "2026-07-09",
+        "price_idr_per_ton": 58896.90851339805,
+        "lower_idr_per_ton": 49063.34949663076,
+        "upper_idr_per_ton": 70701.36605071754
+      },
+      {
+        "date": "2026-07-10",
+        "price_idr_per_ton": 58896.751459393185,
+        "lower_idr_per_ton": 48448.27648740051,
+        "upper_idr_per_ton": 71598.57035103485
+      },
+      {
+        "date": "2026-07-13",
+        "price_idr_per_ton": 58896.2802973786,
+        "lower_idr_per_ton": 47877.34797695527,
+        "upper_idr_per_ton": 72451.2108426934
+      },
+      {
+        "date": "2026-07-14",
+        "price_idr_per_ton": 58896.12324337374,
+        "lower_idr_per_ton": 47343.77477428707,
+        "upper_idr_per_ton": 73267.3587950276
+      },
+      {
+        "date": "2026-07-15",
+        "price_idr_per_ton": 58895.966189368875,
+        "lower_idr_per_ton": 46841.78990949732,
+        "upper_idr_per_ton": 74052.14104928951
+      },
+      {
+        "date": "2026-07-16",
+        "price_idr_per_ton": 58895.80913536401,
+        "lower_idr_per_ton": 46367.11712546062,
+        "upper_idr_per_ton": 74809.8339675408
+      },
+      {
+        "date": "2026-07-17",
+        "price_idr_per_ton": 58895.65208135915,
+        "lower_idr_per_ton": 45916.35840796162,
+        "upper_idr_per_ton": 75543.83566896831
+      },
+      {
+        "date": "2026-07-20",
+        "price_idr_per_ton": 58895.180919344566,
+        "lower_idr_per_ton": 45486.51822276534,
+        "upper_idr_per_ton": 76256.49249597485
+      },
+      {
+        "date": "2026-07-21",
+        "price_idr_per_ton": 58895.0238653397,
+        "lower_idr_per_ton": 45075.816906828644,
+        "upper_idr_per_ton": 76950.88129558584
+      },
+      {
+        "date": "2026-07-22",
+        "price_idr_per_ton": 58894.86681133485,
+        "lower_idr_per_ton": 44682.116434283314,
+        "upper_idr_per_ton": 77628.49241544674
+      },
+      {
+        "date": "2026-07-23",
+        "price_idr_per_ton": 58894.70975732998,
+        "lower_idr_per_ton": 44303.81669140109,
+        "upper_idr_per_ton": 78290.92607439749
+      },
+      {
+        "date": "2026-07-24",
+        "price_idr_per_ton": 58894.55270332512,
+        "lower_idr_per_ton": 43939.55089919615,
+        "upper_idr_per_ton": 78939.54915657082
+      },
+      {
+        "date": "2026-07-27",
+        "price_idr_per_ton": 58894.08154131054,
+        "lower_idr_per_ton": 43587.90821707887,
+        "upper_idr_per_ton": 79575.11572522495
+      },
+      {
+        "date": "2026-07-28",
+        "price_idr_per_ton": 58893.92448730568,
+        "lower_idr_per_ton": 43248.3310597991,
+        "upper_idr_per_ton": 80199.49571512033
+      },
+      {
+        "date": "2026-07-29",
+        "price_idr_per_ton": 58893.76743330081,
+        "lower_idr_per_ton": 42919.688044753486,
+        "upper_idr_per_ton": 80813.1652511326
+      },
+      {
+        "date": "2026-07-30",
+        "price_idr_per_ton": 58893.61037929595,
+        "lower_idr_per_ton": 42601.18839173934,
+        "upper_idr_per_ton": 81416.91521875179
+      },
+      {
+        "date": "2026-07-31",
+        "price_idr_per_ton": 58893.45332529109,
+        "lower_idr_per_ton": 42292.130798477796,
+        "upper_idr_per_ton": 82011.44702557949
+      },
+      {
+        "date": "2026-08-03",
+        "price_idr_per_ton": 58892.98216327651,
+        "lower_idr_per_ton": 41991.6659554517,
+        "upper_idr_per_ton": 82596.94558828788
+      },
+      {
+        "date": "2026-08-04",
+        "price_idr_per_ton": 58892.825109271645,
+        "lower_idr_per_ton": 41699.68295440771,
+        "upper_idr_per_ton": 83174.84939018334
+      },
+      {
+        "date": "2026-08-05",
+        "price_idr_per_ton": 58892.66805526678,
+        "lower_idr_per_ton": 41415.45175353724,
+        "upper_idr_per_ton": 83745.22560584199
+      },
+      {
+        "date": "2026-08-06",
+        "price_idr_per_ton": 58892.511001261926,
+        "lower_idr_per_ton": 41138.51630483992,
+        "upper_idr_per_ton": 84308.53038872746
+      },
+      {
+        "date": "2026-08-07",
+        "price_idr_per_ton": 58892.35394725706,
+        "lower_idr_per_ton": 40868.46274399857,
+        "upper_idr_per_ton": 84865.17770865548
+      },
+      {
+        "date": "2026-08-10",
+        "price_idr_per_ton": 58891.88278524248,
+        "lower_idr_per_ton": 40604.69757192459,
+        "upper_idr_per_ton": 85415.08902627077
+      },
+      {
+        "date": "2026-08-11",
+        "price_idr_per_ton": 58891.72573123762,
+        "lower_idr_per_ton": 40347.310871961745,
+        "upper_idr_per_ton": 85959.51711898277
+      }
+    ],
+    "summary": {
+      "mean_idr_per_ton": 58894.976749138244,
+      "horizon_end_idr_per_ton": 58891.72573123762,
+      "last_observed_month": "2026-06",
+      "last_observed_vwap_idr_per_ton": 59102.362204724406,
+      "trend": "stay",
+      "trend_confidence": 0.009504406836610017,
+      "change_pct": -0.0035089199119960747
+    },
+    "monthly_anchors": [
+      {
+        "month": "2024-01",
+        "vwap_idr_per_ton": 59199.76489028213,
+        "volume_tco2e": 7656.0,
+        "value_idr": 453233400.0,
+        "transaction_count": 7
+      },
+      {
+        "month": "2024-03",
+        "vwap_idr_per_ton": 56241.68118093824,
+        "volume_tco2e": 70046.0,
+        "value_idr": 3939504800.0,
+        "transaction_count": 2
+      },
+      {
+        "month": "2024-04",
+        "vwap_idr_per_ton": 58800.0,
+        "volume_tco2e": 108.0,
+        "value_idr": 6350400.0,
+        "transaction_count": 4
+      },
+      {
+        "month": "2024-05",
+        "vwap_idr_per_ton": 58800.0,
+        "volume_tco2e": 422.0,
+        "value_idr": 24813600.0,
+        "transaction_count": 16
+      },
+      {
+        "month": "2024-07",
+        "vwap_idr_per_ton": 58800.0,
+        "volume_tco2e": 403.0,
+        "value_idr": 23696400.0,
+        "transaction_count": 3
+      },
+      {
+        "month": "2024-08",
+        "vwap_idr_per_ton": 58800.0,
+        "volume_tco2e": 10.0,
+        "value_idr": 588000.0,
+        "transaction_count": 1
+      },
+      {
+        "month": "2024-09",
+        "vwap_idr_per_ton": 58800.0,
+        "volume_tco2e": 176.0,
+        "value_idr": 10348800.0,
+        "transaction_count": 8
+      },
+      {
+        "month": "2024-10",
+        "vwap_idr_per_ton": 58800.0,
+        "volume_tco2e": 379.0,
+        "value_idr": 22285200.0,
+        "transaction_count": 8
+      },
+      {
+        "month": "2024-11",
+        "vwap_idr_per_ton": 58800.0,
+        "volume_tco2e": 1552.0,
+        "value_idr": 91257600.0,
+        "transaction_count": 6
+      },
+      {
+        "month": "2024-12",
+        "vwap_idr_per_ton": 58800.0,
+        "volume_tco2e": 26.0,
+        "value_idr": 1528800.0,
+        "transaction_count": 4
+      },
+      {
+        "month": "2025-01",
+        "vwap_idr_per_ton": 95292.82970550576,
+        "volume_tco2e": 1562.0,
+        "value_idr": 148847400.0,
+        "transaction_count": 25
+      },
+      {
+        "month": "2025-02",
+        "vwap_idr_per_ton": 61365.51724137931,
+        "volume_tco2e": 29.0,
+        "value_idr": 1779600.0,
+        "transaction_count": 3
+      },
+      {
+        "month": "2025-03",
+        "vwap_idr_per_ton": 58983.333333333336,
+        "volume_tco2e": 60.0,
+        "value_idr": 3539000.0,
+        "transaction_count": 7
+      },
+      {
+        "month": "2025-04",
+        "vwap_idr_per_ton": 58800.0,
+        "volume_tco2e": 29.0,
+        "value_idr": 1705200.0,
+        "transaction_count": 4
+      },
+      {
+        "month": "2025-05",
+        "vwap_idr_per_ton": 59561.90476190476,
+        "volume_tco2e": 21.0,
+        "value_idr": 1250800.0,
+        "transaction_count": 5
+      },
+      {
+        "month": "2025-06",
+        "vwap_idr_per_ton": 58400.0,
+        "volume_tco2e": 2.0,
+        "value_idr": 116800.0,
+        "transaction_count": 2
+      },
+      {
+        "month": "2025-07",
+        "vwap_idr_per_ton": 112050.0,
+        "volume_tco2e": 16.0,
+        "value_idr": 1792800.0,
+        "transaction_count": 3
+      },
+      {
+        "month": "2025-08",
+        "vwap_idr_per_ton": 58800.0,
+        "volume_tco2e": 416.0,
+        "value_idr": 24460800.0,
+        "transaction_count": 8
+      },
+      {
+        "month": "2025-09",
+        "vwap_idr_per_ton": 58800.0,
+        "volume_tco2e": 10.0,
+        "value_idr": 588000.0,
+        "transaction_count": 1
+      },
+      {
+        "month": "2025-10",
+        "vwap_idr_per_ton": 62850.52631578947,
+        "volume_tco2e": 570.0,
+        "value_idr": 35824800.0,
+        "transaction_count": 12
+      },
+      {
+        "month": "2025-11",
+        "vwap_idr_per_ton": 58852.98429319372,
+        "volume_tco2e": 955.0,
+        "value_idr": 56204600.0,
+        "transaction_count": 6
+      },
+      {
+        "month": "2025-12",
+        "vwap_idr_per_ton": 58800.0,
+        "volume_tco2e": 2.0,
+        "value_idr": 117600.0,
+        "transaction_count": 2
+      },
+      {
+        "month": "2026-01",
+        "vwap_idr_per_ton": 58800.0,
+        "volume_tco2e": 13.0,
+        "value_idr": 764400.0,
+        "transaction_count": 1
+      },
+      {
+        "month": "2026-05",
+        "vwap_idr_per_ton": 58800.0,
+        "volume_tco2e": 119.0,
+        "value_idr": 6997200.0,
+        "transaction_count": 2
+      },
+      {
+        "month": "2026-06",
+        "vwap_idr_per_ton": 59102.362204724406,
+        "volume_tco2e": 127.0,
+        "value_idr": 7506000.0,
+        "transaction_count": 3
+      }
+    ],
+    "market_depth": {
+      "window": [
+        "2024-01",
+        "2026-07"
+      ],
+      "median_monthly_volume_tco2e": 29.0,
+      "max_monthly_volume_tco2e": 70046.0,
+      "trailing_12m_volume_tco2e": 2212.0
+    },
+    "model": {
+      "model_id": "carbon_prophet_20260810",
+      "model_class": "prophet",
+      "prophet_version": "1.3.0",
+      "trained_at": "2026-08-10T14:13:17.160087+00:00",
+      "training_data": "synthetic_daily_by_type",
+      "generator_seed": 42,
+      "generator_series_sha256": "91710518795e6692399282e99429fbebb0172039c8fb02062a11006eafe64c56",
+      "artefact_sha256": "",
+      "band_source": "real_monthly_dispersion",
+      "band_sigma_monthly_log": 0.24688250588727806
+    },
+    "staleness": {
+      "is_stale": false,
+      "as_of": "2026-06-30",
+      "age_hours": 1043.8360539608334
+    },
+    "disclosures": [
+      "synthetic_daily_by_type_validation_target",
+      "monthly_anchors_are_real",
+      "thin_market_depth"
+    ]
+  }
+}

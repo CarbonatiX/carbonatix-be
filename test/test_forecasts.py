@@ -13,11 +13,11 @@ def test_get_forecasts_shape(mock_db):
     assert nickel.currency_unit == "usd_per_ton"
     assert nickel.interval_level == 0.8
     assert len(nickel.points) == 14
-    assert nickel.points[0].price_usd_per_ton == 15400.0
+    assert nickel.points[0].price_usd_per_ton == 16915.0
     assert nickel.points[0].provenance.bucket == "short"
     assert nickel.points[13].provenance.bucket == "short"
-    assert nickel.summary.mean_usd_per_ton == 15400.0
-    assert nickel.history.last_observed_price_usd_per_ton == 15400.0
+    assert nickel.summary.mean_usd_per_ton == 16915.0
+    assert nickel.history.last_observed_price_usd_per_ton == 16915.0
     assert nickel.model.bucket_models[0].model_class == "stub"
     assert nickel.staleness.is_stale is False
     assert isinstance(nickel.disclosures, list)
@@ -27,8 +27,8 @@ def test_get_forecasts_shape(mock_db):
     assert carbon.available is True
     assert carbon.currency_unit == "idr_per_ton"
     assert len(carbon.points) == 14
-    assert carbon.points[0].price_idr_per_ton == 42000.0
-    assert carbon.summary.mean_idr_per_ton == 42000.0
+    assert carbon.points[0].price_idr_per_ton == 59102.0
+    assert carbon.summary.mean_idr_per_ton == 59102.0
     assert len(carbon.monthly_anchors) == 1
     assert carbon.market_depth is not None
     assert carbon.model.model_class == "stub"
@@ -73,3 +73,48 @@ def test_get_forecasts_endpoint(client, auth_headers):
         "disclosures",
     ):
         assert key in body["carbon"]
+
+
+def test_seed_forecasts_upserts_mvp_fixture(mock_db, monkeypatch):
+    from server.seed import seed_forecasts
+
+    monkeypatch.delenv("SKIP_FORECAST_SEED", raising=False)
+    assert seed_forecasts(mock_db) is True
+    assert mock_db.forecasts.count_documents({}) == 1
+
+    result = forecast_service.get_forecasts(mock_db, horizon_days=30)
+    assert result.horizon_days == 30
+    assert result.carbon.model.model_id == "carbon_prophet_20260810"
+    assert result.nickel.model.dataset_version == "lme_nickel_2026_08_05"
+    assert result.nickel.points[0].provenance.model_id.startswith(
+        "nickel_naive_persistence"
+    )
+    assert len(result.nickel.points) == 22
+    assert len(result.carbon.points) == 30
+
+
+def test_seed_forecasts_skips_when_present(mock_db, monkeypatch):
+    from server.seed import seed_forecasts
+
+    monkeypatch.delenv("SKIP_FORECAST_SEED", raising=False)
+    assert seed_forecasts(mock_db) is True
+    assert seed_forecasts(mock_db) is False
+
+
+def test_cached_forecast_slices_to_requested_horizon(mock_db, monkeypatch):
+    from datetime import date
+
+    from server.seed import seed_forecasts
+
+    monkeypatch.delenv("SKIP_FORECAST_SEED", raising=False)
+    seed_forecasts(mock_db)
+    result = forecast_service.get_forecasts(mock_db, horizon_days=7)
+    assert result.horizon_days == 7
+    assert result.carbon.points
+    start = date.fromisoformat(result.carbon.points[0].date)
+    assert all(
+        (date.fromisoformat(p.date) - start).days <= 6 for p in result.carbon.points
+    )
+    # Nickel business-day series: fewer points than calendar days.
+    assert 1 <= len(result.nickel.points) <= 7
+    assert result.carbon.model.model_id == "carbon_prophet_20260810"

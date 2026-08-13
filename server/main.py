@@ -1,11 +1,12 @@
 from contextlib import asynccontextmanager
 
-from database import get_db
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from pydantic import ValidationError
-from router import router
+
+from server.database import get_db
+from server.router import router
 
 
 class AppError(Exception):
@@ -26,15 +27,16 @@ class AppError(Exception):
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    from ai_env import ensure_ai_env
+    from server.ai_env import ensure_ai_env
 
     ensure_ai_env()
     db = get_db()
     if db is not None:
         _ensure_indexes(db)
-        from seed import seed_database
+        from server.seed import seed_database, seed_forecasts
 
         seed_database(db)
+        seed_forecasts(db)
     yield
 
 

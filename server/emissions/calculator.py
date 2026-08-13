@@ -9,7 +9,7 @@ Biocoke reductant and hydro grid power are treated as zero-emission.
 import math
 from dataclasses import dataclass
 
-from emissions.constants import DEFAULT_CONSTANTS, ProcessConstants
+from server.emissions.constants import DEFAULT_CONSTANTS, ProcessConstants
 
 __all__ = ["EmissionResult", "calculate_emissions"]
 
@@ -33,7 +33,11 @@ class EmissionResult:
 
     @property
     def scope_1(self) -> float:
-        return self.dryer_emissions + self.kiln_heat_emissions + self.kiln_reductant_emissions
+        return (
+            self.dryer_emissions
+            + self.kiln_heat_emissions
+            + self.kiln_reductant_emissions
+        )
 
     @property
     def scope_2(self) -> float:

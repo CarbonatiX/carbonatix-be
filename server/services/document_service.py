@@ -4,13 +4,15 @@ from __future__ import annotations
 
 import mimetypes
 
-from ai_env import ensure_ai_env, require_ingestion_config
 from fastapi import HTTPException, UploadFile, status
-from ingestion.document_vision import ExtractionFailed, parse as parse_document
-from ingestion.interpret import interpret as interpret_fields
-from ingestion.mapping import readings_to_candidates
-from models import create_document
-from schemas import CandidateResponse, DocumentExtractionResponse
+
+from server.ai_env import ensure_ai_env, require_ingestion_config
+from server.ingestion.document_vision import ExtractionFailed
+from server.ingestion.document_vision import parse as parse_document
+from server.ingestion.interpret import interpret as interpret_fields
+from server.ingestion.mapping import readings_to_candidates
+from server.models import create_document
+from server.schemas import CandidateResponse, DocumentExtractionResponse
 
 _MAX_UPLOAD_BYTES = 20 * 1024 * 1024
 _SUPPORTED_MEDIA_TYPES = frozenset(

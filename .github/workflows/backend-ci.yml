@@ -30,22 +30,22 @@ jobs:
       - name: Run Ruff
         run: ruff check .
 
-      - name: Prepare test env
-        run: cp test/.env.example test/.env
-
       - name: Run Tests
-        env:
-          PYTHONPATH: .:server
         run: pytest -vv
 
-
   docker:
-    name: Build & Run
-    Backend needs: test
+    name: Build & Run Backend
+    needs: test
     runs-on: ubuntu-latest
     steps:
       - name: Checkout source
         uses: actions/checkout@v4
+
+      # server/.env is gitignored, but compose reads it via env_file. The
+      # example defaults are enough for a smoke test: Compose overrides
+      # MONGODB_URI to the database service, and Elice/Helpy stay empty.
+      - name: Prepare env
+        run: cp server/.env.example server/.env
 
       - name: Build backend image
         run: docker compose build server

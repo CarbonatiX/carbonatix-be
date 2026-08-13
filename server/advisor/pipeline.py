@@ -32,10 +32,13 @@ from typing import Any
 
 from openai import AsyncOpenAI
 
-from emissions.calculator import EmissionResult
-from emissions.compliance import CompliancePosition
+from server.emissions.calculator import EmissionResult
+from server.emissions.compliance import CompliancePosition
+from server.pricing import ADVISOR_CONFIDENCE_THRESHOLD
+
 from .corpus import has_placeholder_text, select_clauses
 from .prompt import build_prompt, unsupported_numerals
+from .routes import build_route_comparison
 
 __all__ = ["run_pipeline"]
 
@@ -142,7 +145,9 @@ async def _call_model(prompt: str) -> str:
         api_key = os.environ["ELICE_API_KEY"]
         base_url = os.environ["ELICE_BASE_URL"]
     except KeyError as exc:
-        raise RuntimeError(f"Advisor is not configured: {exc.args[0]} is not set") from exc
+        raise RuntimeError(
+            f"Advisor is not configured: {exc.args[0]} is not set"
+        ) from exc
 
     async with AsyncOpenAI(api_key=api_key, base_url=base_url) as client:
         response = await client.chat.completions.create(
@@ -175,7 +180,9 @@ async def _call_model(prompt: str) -> str:
     return content
 
 
-def _event(stage: str, status: str, payload: dict[str, Any] | None, *, placeholder: bool) -> dict:
+def _event(
+    stage: str, status: str, payload: dict[str, Any] | None, *, placeholder: bool
+) -> dict:
     """Every event's shape: `stage`/`status`/`payload` plus a top-level
     `placeholderCitations` flag repeated on every single event -- not just
     `verify`'s -- so a consumer never has to special-case which stage it is
@@ -207,22 +214,32 @@ async def run_pipeline(
 
     yield _event("retrieve", "running", None, placeholder=placeholder)
     clauses = select_clauses(is_compliant=position.is_compliant)
-    yield _event("retrieve", "done", {"refs": [c.ref for c in clauses]}, placeholder=placeholder)
+    yield _event(
+        "retrieve", "done", {"refs": [c.ref for c in clauses]}, placeholder=placeholder
+    )
 
     yield _event("assemble", "running", None, placeholder=placeholder)
-    prompt, permitted = build_prompt(result, position, forecast, clauses)
+    carbon_price = float(forecast["idxCarbonIdrPerTon"][0])
+    tax_rate = float(forecast.get("taxRateIdrPerTon") or 0)
+    market_depth = float(forecast.get("marketDepthMedianTco2e") or 0)
+    routes = build_route_comparison(
+        deficit_tco2e=max(0.0, position.position_tco2e),
+        carbon_price_idr=carbon_price,
+        tax_rate_idr=tax_rate,
+        market_depth_median_tco2e=market_depth,
+    )
+    route_figures = routes.figure_entries() if routes else None
+    prompt, permitted = build_prompt(
+        result, position, forecast, clauses, route_figures=route_figures
+    )
     yield _event(
         "assemble",
         "done",
         {
-            # The forecast's synthetic-data provenance (forecasting/service.py)
-            # is carried through unmodified, not stripped down to just the
-            # two price figures the prompt needed -- a UI showing "figures
-            # used" must be able to flag that some of them trace back to a
-            # fabricated training series.
             "figureCount": len(permitted),
             "forecastSynthetic": bool(forecast.get("synthetic")),
             "forecastProvenance": forecast.get("provenance"),
+            "routeComparison": routes.as_dict() if routes else None,
         },
         placeholder=placeholder,
     )
@@ -230,26 +247,37 @@ async def run_pipeline(
     yield _event("synthesise", "running", None, placeholder=placeholder)
     try:
         body = await _call_model(prompt)
-    except Exception as exc:  # noqa: BLE001 - isolates any model-call failure
-        yield _event("synthesise", "failed", {"error": str(exc)}, placeholder=placeholder)
+    except Exception as exc:
+        yield _event(
+            "synthesise", "failed", {"error": str(exc)}, placeholder=placeholder
+        )
         return
     yield _event("synthesise", "done", {"body": body}, placeholder=placeholder)
 
     yield _event("verify", "running", None, placeholder=placeholder)
     unsupported = unsupported_numerals(body, permitted)
+    flagged = bool(unsupported)
+    # Simple confidence: flagged → 0; else start high and discount placeholders / depth.
+    confidence = 0.0 if flagged else 0.85
+    if not flagged and placeholder:
+        confidence = min(confidence, 0.55)
+    if not flagged and routes and routes.exceeds_observed_depth:
+        confidence = min(confidence, 0.5)
+    escalate = confidence < ADVISOR_CONFIDENCE_THRESHOLD
+    cited = [c for c in clauses if c.ref in body]
     yield _event(
         "verify",
         "done",
         {
-            # `flagged` is the mechanism that stops a fabricated-figure
-            # recommendation from being presented as advice -- it is never
-            # computed and then dropped.
-            "flagged": bool(unsupported),
+            "flagged": flagged,
             "unsupported": sorted(unsupported),
-            "citations": [c.ref for c in clauses if c.ref in body],
+            "citations": [{"ref": c.ref, "text": c.text} for c in cited],
             "body": body,
             "model": _model(),
             "placeholderCitations": placeholder,
+            "confidence": confidence,
+            "escalate": escalate,
+            "routeComparison": routes.as_dict() if routes else None,
         },
         placeholder=placeholder,
     )

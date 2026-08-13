@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import os
 
-from config import settings
+from server.config import settings
 
 
 def ensure_ai_env() -> None:

@@ -49,7 +49,7 @@ def test_login_invalid_credentials(client):
         json={"email": "login@example.com", "password": "WrongPass1!"},
     )
 
-    assert response.status_code == 500
+    assert response.status_code == 401
 
 
 def test_register_duplicate_email_raises(mock_db):

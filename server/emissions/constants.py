@@ -34,7 +34,9 @@ class ProcessConstants:
             value = getattr(self, f.name)
             if f.name in _FRACTION_FIELDS:
                 if not 0.0 < value <= 1.0:
-                    raise ValueError(f"{f.name} must be a fraction in (0, 1], got {value!r}")
+                    raise ValueError(
+                        f"{f.name} must be a fraction in (0, 1], got {value!r}"
+                    )
             elif not (math.isfinite(value) and value > 0):
                 raise ValueError(f"{f.name} must be positive and finite, got {value!r}")
 
