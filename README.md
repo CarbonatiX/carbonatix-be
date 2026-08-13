@@ -40,7 +40,7 @@ docker compose up -d
 
 That's the whole setup — Mongo and the API, with the API waiting on Mongo's healthcheck before it starts. The container always talks to the bundled Mongo service (Compose overrides `MONGODB_URI` to `mongodb://database:27017`, so the same `server/.env` works for both this and the local path below). To point the container at Atlas or another remote instead, comment out that `environment:` line in `compose.yaml`.
 
-The legacy Streamlit `frontend` service is behind a Compose profile and is *not* started here — the MVP UI is the sibling `carbonatix-fe` repo.
+This repo serves the API only — the MVP UI is the sibling `carbonatix-fe` repo.
 
 ### 3. Verify
 
@@ -140,7 +140,7 @@ Sources: nickel prototype `forecasts["30"]`, carbon `artifacts/carbon_prophet_20
 │   └── services/           # Domain services
 ├── test/                   # pytest
 ├── mdns/                   # Optional LAN mDNS helper
-├── compose.yaml            # Mongo + API (legacy Streamlit behind a profile)
+├── compose.yaml            # Mongo + API
 ├── Dockerfile              # API image
 └── requirements.txt
 ```

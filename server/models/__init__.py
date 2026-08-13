@@ -1,7 +1,6 @@
 from .company import create_company, find_company_by_id, update_company
 from .document import create_document, find_document_by_id, list_documents_by_company
 from .forecast import get_latest_forecast, upsert_forecast
-from .price_history import get_price_history, upsert_price_history
 from .recommendation import create_recommendation, find_recommendation_by_run
 from .run import create_run, find_run_by_id
 from .twin import (
@@ -31,11 +30,9 @@ __all__ = [
     "find_user_by_id",
     "get_gridfs_file",
     "get_latest_forecast",
-    "get_price_history",
     "list_documents_by_company",
     "remove_twin_node",
     "update_company",
     "upsert_forecast",
-    "upsert_price_history",
     "upsert_twin_nodes",
 ]

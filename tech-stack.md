@@ -78,7 +78,6 @@ carbonatix-be/
 │   └── services/         # Service modules
 ├── requirements.txt      # Python dependencies
 ├── Dockerfile            # Container build
-├── Dockerfile.streamlit  # Frontend container build
 ├── compose.yaml          # Docker Compose
 └── .env                  # Environment variables
 ```
