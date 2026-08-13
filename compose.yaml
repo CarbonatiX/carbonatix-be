@@ -25,10 +25,16 @@ services:
     env_file:
       - ./server/.env
     environment:
-      # Overrides MONGODB_URI from server/.env so the same file works for both
-      # the native venv (localhost) and this container (Compose network DNS).
-      # Comment out to make the container use the URI in server/.env instead.
-      MONGODB_URI: mongodb://database:27017
+      # `server/.env` is loaded via env_file above, but its MONGODB_URI is
+      # usually `localhost` — which inside this container means the container
+      # itself, not your host. So the container needs its own value.
+      #
+      # Default: the bundled `database` service, so a fresh clone (and CI) is
+      # self-contained with no extra setup.
+      # Override: set MONGODB_URI in your shell, or in a repo-root `.env`,
+      # which Compose reads for interpolation. That is how you point the
+      # container at Atlas or any other remote without editing this file.
+      MONGODB_URI: ${MONGODB_URI:-mongodb://database:27017}
     depends_on:
       database:
         condition: service_healthy

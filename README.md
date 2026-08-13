@@ -38,7 +38,16 @@ Edit `server/.env`:
 docker compose up -d
 ```
 
-That's the whole setup — Mongo and the API, with the API waiting on Mongo's healthcheck before it starts. The container always talks to the bundled Mongo service (Compose overrides `MONGODB_URI` to `mongodb://database:27017`, so the same `server/.env` works for both this and the local path below). To point the container at Atlas or another remote instead, comment out that `environment:` line in `compose.yaml`.
+That's the whole setup — Mongo **and** the API, with the API waiting on Mongo's healthcheck before it starts. Note there is no service name on that command: `docker compose up -d database` would start Mongo *only*, leaving nothing on port 8000.
+
+**Which database the container uses.** `server/.env` is loaded into the container, but its `MONGODB_URI` is typically `localhost`, which inside a container means the container itself. So Compose supplies the container's own value:
+
+| Repo-root `.env` | Container connects to |
+|---|---|
+| absent (default) | the bundled `database` service — self-contained, seeds `demo@carbonatix.com` on first run |
+| `MONGODB_URI=<remote>` | that remote (e.g. Atlas), so you see shared team data |
+
+Create a repo-root `.env` with a single `MONGODB_URI=...` line to aim the container at a remote. It is gitignored and read by Compose for interpolation only. An exported `MONGODB_URI` in your shell works the same way.
 
 This repo serves the API only — the MVP UI is the sibling `carbonatix-fe` repo.
 
@@ -58,15 +67,17 @@ Registering a new user also seeds the five bundled twin process nodes so form-pa
 
 ## Develop locally (hot reload)
 
-Run the API natively against the Compose Mongo, so edits reload without a rebuild:
+Run the API natively against the Compose Mongo, so edits reload without a rebuild.
+
+> This path starts **Mongo only** in Docker — note the `database` argument. The API does *not* run in a container here; you start it yourself with `uvicorn`. If you stop after the `docker compose` line, port 8000 will be empty and the frontend will fail with `ERR_CONNECTION_REFUSED`.
 
 ```bash
 python -m venv .venv
 .venv\Scripts\activate          # macOS/Linux: source .venv/bin/activate
 pip install -r requirements.txt
 
-docker compose up -d database   # Mongo only
-uvicorn server.main:app --reload --port 8000
+docker compose up -d database   # Mongo ONLY — no API
+uvicorn server.main:app --reload --port 8000   # the API itself
 ```
 
 Run everything from the **repo root** — `server` is a normal package, so no `PYTHONPATH` is needed. This path uses `MONGODB_URI` from `server/.env` as-is (`mongodb://localhost:27017` for the Compose Mongo, or your Atlas URI).
